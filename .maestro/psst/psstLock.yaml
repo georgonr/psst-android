@@ -1,0 +1,66 @@
+# PSST: smoke test of the psst app.
+#  - the app starts and shows the psst onboarding,
+#  - the only sign-in option is "Sign in to chat.macet.eu" (+ QR code),
+#  - nowhere can the user change / type another homeserver.
+# Screenshots are written to ~/.maestro/tests/psst/ (uploaded by the CI as "test-results").
+appId: eu.macet.psst.debug
+---
+- clearState
+- launchApp:
+    clearKeychain: true
+    permissions:
+      all: allow
+- extendedWaitUntil:
+    visible: "Sign in to chat.macet.eu"
+    timeout: 120000
+- takeScreenshot: /home/runner/.maestro/tests/psst/01-onboarding
+- runFlow: assertNoServerChoice.yaml
+- assertNotVisible: "Be in your element"
+- assertVisible: "Sign in with QR code"
+
+# Sign in: only chat.macet.eu can be used
+- tapOn: "Sign in to chat.macet.eu"
+- waitForAnimationToEnd:
+    timeout: 15000
+- extendedWaitUntil:
+    notVisible: "Sign in to chat.macet.eu"
+    timeout: 20000
+    optional: true
+- takeScreenshot: /home/runner/.maestro/tests/psst/02-after-sign-in
+- runFlow: assertNoServerChoice.yaml
+- back
+- runFlow:
+    when:
+      notVisible: "Sign in to chat.macet.eu"
+    commands:
+      - back
+- runFlow:
+    when:
+      notVisible: "Sign in to chat.macet.eu"
+    commands:
+      - launchApp
+- extendedWaitUntil:
+    visible: "Sign in to chat.macet.eu"
+    timeout: 30000
+
+# QR code sign-in
+- tapOn: "Sign in with QR code"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: /home/runner/.maestro/tests/psst/03-qr-code
+- runFlow: assertNoServerChoice.yaml
+- back
+- runFlow:
+    when:
+      notVisible: "Sign in to chat.macet.eu"
+    commands:
+      - back
+
+# An Element login link for matrix.org must not unlock another homeserver
+- openLink: "https://mobile.element.io/element/?account_provider=matrix.org&login_hint=mxid:@alice:matrix.org"
+- launchApp
+- extendedWaitUntil:
+    visible: "Sign in to chat.macet.eu"
+    timeout: 30000
+- takeScreenshot: /home/runner/.maestro/tests/psst/04-after-login-link
+- runFlow: assertNoServerChoice.yaml

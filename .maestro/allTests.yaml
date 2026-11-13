@@ -1,10 +1,5 @@
-appId: ${MAESTRO_APP_ID}
-androidWebViewHierarchy: devtools
+# PSST: the CI Maestro suite only runs the psst smoke test (branding + homeserver lock).
+# The upstream Element X flows (tests/**) need an account on matrix.org and are not run any more.
+appId: eu.macet.psst.debug
 ---
-## Check that all env variables required in the whole test suite are declared (to fail faster)
-- runScript: ./scripts/checkEnv.js
-- runFlow: tests/init.yaml
-- runFlow: tests/account/login.yaml
-- runFlow: tests/settings/settings.yaml
-- runFlow: tests/roomList/roomList.yaml
-- runFlow: tests/account/logout.yaml
+- runFlow: psst/psstLock.yaml

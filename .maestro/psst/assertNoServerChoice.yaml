@@ -1,0 +1,12 @@
+# PSST: none of the UI that lets the user pick or type another homeserver may be visible.
+appId: eu.macet.psst.debug
+---
+- assertNotVisible: "Sign in manually"
+- assertNotVisible: "Create account"
+- assertNotVisible: "Other"
+- assertNotVisible: ".*[Cc]hange account provider.*"
+- assertNotVisible: ".*[Cc]hange server.*"
+- assertNotVisible: ".*[Aa]ccount provider.*"
+- assertNotVisible: ".*[Hh]omeserver URL.*"
+- assertNotVisible: ".*matrix\\.org.*"
+- assertNotVisible: ".*element\\.io.*"
