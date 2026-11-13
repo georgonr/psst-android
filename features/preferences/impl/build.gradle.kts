@@ -37,6 +37,11 @@ android {
             name = "URL_ACCEPTABLE_USE",
             value = BuildTimeConfig.URL_ACCEPTABLE_USE ?: "https://element.io/acceptable-use-policy-terms",
         )
+        // PSST: link to the source code of this AGPL fork in the About screen.
+        buildConfigFieldStr(
+            name = "URL_SOURCE_CODE",
+            value = BuildTimeConfig.PSST_SOURCE_URL,
+        )
         buildConfigFieldStr(
             name = "URL_PRIVACY",
             value = BuildTimeConfig.URL_PRIVACY ?: "https://element.io/privacy",

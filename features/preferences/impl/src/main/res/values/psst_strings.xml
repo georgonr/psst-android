@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST: strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_about_source_code">Source code (AGPL-3.0): github.com/georgonr/psst-android</string>
+</resources>
