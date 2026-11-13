@@ -1,6 +1,6 @@
 # PSST: smoke test of the psst app.
 #  - the app starts and shows the psst onboarding,
-#  - the only sign-in option is "Sign in to chat.macet.eu" (+ QR code),
+#  - the only sign-in option is "Sign in to chat.macet.eu" (+ QR code, + "Create account" on chat.macet.eu),
 #  - nowhere can the user change / type another homeserver.
 # Screenshots are written to ~/.maestro/tests/psst/ (uploaded by the CI as "test-results").
 appId: eu.macet.psst.debug
@@ -17,6 +17,8 @@ appId: eu.macet.psst.debug
 - runFlow: assertNoServerChoice.yaml
 - assertNotVisible: "Be in your element"
 - assertVisible: "Sign in with QR code"
+# PSST: "Create account" opens the MAS registration of chat.macet.eu (invite token required).
+- assertVisible: "Create account"
 
 # Sign in: only chat.macet.eu can be used
 - tapOn: "Sign in to chat.macet.eu"

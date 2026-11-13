@@ -124,6 +124,18 @@ class OnBoardingPresenter(
                         )
                     )
                 }
+                // PSST: account creation on the locked homeserver (MAS registration, invite token required there).
+                is OnBoardingEvent.OnSignUp -> localCoroutineScope.launch {
+                    accountProviderDataSource.setAccountProvider(event.defaultAccountProvider)
+                    loginModeState.eventSink(
+                        LoginModeEvent.Submit(
+                            isAccountCreation = true,
+                            homeserverUrl = event.defaultAccountProvider.serverNameOrBaseUrl(),
+                            resolvedHomeserverUrl = null,
+                            loginHint = null,
+                        )
+                    )
+                }
                 OnBoardingEvent.ClearError -> loginModeState.eventSink(LoginModeEvent.ClearError)
                 OnBoardingEvent.OnVersionClick -> {
                     if (canReportBug) {
@@ -143,7 +155,11 @@ class OnBoardingPresenter(
             defaultAccountProvider = defaultAccountProvider,
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
-            canCreateAccount = defaultAccountProvider == null && canConnectToAnyAccountProvider && OnBoardingConfig.CAN_CREATE_ACCOUNT,
+            // PSST: upstream hides "Create account" when the account provider is forced (enterprise lock). psst is locked
+            // to chat.macet.eu, whose MAS allows registration with an invite token, so it is also offered for the
+            // forced account provider (see OnBoardingEvent.OnSignUp). The lock itself is unchanged.
+            canCreateAccount = OnBoardingConfig.CAN_CREATE_ACCOUNT &&
+                ((defaultAccountProvider == null && canConnectToAnyAccountProvider) || forcedAccountProvider != null),
             canReportBug = canReportBug && showReportBug,
             loginModeState = loginModeState,
             version = buildMeta.versionName,

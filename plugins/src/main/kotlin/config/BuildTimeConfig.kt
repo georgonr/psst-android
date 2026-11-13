@@ -24,8 +24,10 @@ object BuildTimeConfig {
     val OAUTH_CLIENT_URL_PATH: String? = null
     // PSST: no element.io URLs. Legal pages are expected on app.macet.eu (same host as the OAuth client URI).
     val URL_WEBSITE: String? = "https://app.macet.eu"
-    val URL_LOGO: String? = "https://app.macet.eu/favicon.ico"
-    val URL_COPYRIGHT: String? = "https://github.com/georgonr/psst-android/blob/psst/LICENSE"
+    // PSST: OAuth logo_uri must be an image on the client_uri host (Element Web ships vector-icons/512.png).
+    val URL_LOGO: String? = "https://app.macet.eu/vector-icons/512.png"
+    // PSST: Settings > About > Copyright -> psst terms page (bilingual SK/EN); the AGPL source link is separate.
+    val URL_COPYRIGHT: String? = "https://app.macet.eu/terms.html"
     val URL_ACCEPTABLE_USE: String? = "https://app.macet.eu/terms.html"
     val URL_PRIVACY: String? = "https://app.macet.eu/privacy.html"
     val URL_POLICY: String? = "https://app.macet.eu/privacy.html"

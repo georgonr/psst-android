@@ -320,7 +320,15 @@ private fun OnBoardingButtons(
         if (state.canCreateAccount) {
             TextButton(
                 text = stringResource(id = R.string.screen_onboarding_sign_up),
-                onClick = onCreateAccount,
+                // PSST: with a forced account provider (chat.macet.eu), open its registration page directly.
+                onClick = {
+                    if (defaultAccountProvider != null) {
+                        state.eventSink(OnBoardingEvent.OnSignUp(defaultAccountProvider))
+                    } else {
+                        onCreateAccount()
+                    }
+                },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
             )

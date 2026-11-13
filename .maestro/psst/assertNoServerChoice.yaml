@@ -1,8 +1,8 @@
 # PSST: none of the UI that lets the user pick or type another homeserver may be visible.
+# ("Create account" is allowed: it opens registration on chat.macet.eu's MAS, see OnBoardingPresenter.)
 appId: eu.macet.psst.debug
 ---
 - assertNotVisible: "Sign in manually"
-- assertNotVisible: "Create account"
 - assertNotVisible: "Other"
 - assertNotVisible: ".*[Cc]hange account provider.*"
 - assertNotVisible: ".*[Cc]hange server.*"

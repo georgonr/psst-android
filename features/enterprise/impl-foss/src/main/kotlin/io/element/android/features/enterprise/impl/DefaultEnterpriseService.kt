@@ -38,9 +38,9 @@ class DefaultEnterpriseService(
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
     // PSST: the app is locked to a single homeserver (chat.macet.eu). With a singleton allow list and
-    // canConnectToAnyAccountProvider() == false, the onboarding only offers "Sign in to chat.macet.eu",
-    // never the "change account provider" / free text server input, and every other entry point
-    // (login links, QR code login, Element Classic import) is rejected by the access control.
+    // canConnectToAnyAccountProvider() == false, the onboarding only offers "Sign in to chat.macet.eu" (+ QR code and
+    // "Create account" on chat.macet.eu via its MAS), never the "change account provider" / free text server input,
+    // and every other entry point (login links, QR code login, Element Classic import) is rejected by the access control.
     override fun accountProviderAllowList(): List<AccountProvider> = listOf(psstAccountProvider)
     override fun canConnectToAnyAccountProvider(): Boolean = false
     override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) =
