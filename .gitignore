@@ -112,3 +112,13 @@ lint/tmp/
 .DS_Store
 
 checkouts/**
+
+# PSST: never commit release signing material (the psst release key lives only in ~/psst-keys on the release machine)
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+psst-keys/
+# upstream debug key used for debug builds only
+!app/signature/debug.keystore

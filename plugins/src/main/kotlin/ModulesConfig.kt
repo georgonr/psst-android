@@ -16,7 +16,12 @@ object ModulesConfig {
         includeUnifiedPush = BuildTimeConfig.PUSH_CONFIG_INCLUDE_UNIFIED_PUSH,
     )
 
-    val analyticsConfig: AnalyticsConfig = if (isEnterpriseBuild) {
+    // PSST: no PostHog / Sentry at all, the analytics "noop" module is used.
+    @Suppress("SimplifyBooleanWithConstants")
+    val analyticsConfig: AnalyticsConfig = if (true) {
+        println("PSST: analytics disabled")
+        AnalyticsConfig.Disabled
+    } else if (isEnterpriseBuild) {
         // Is Posthog configuration available?
         val withPosthog = BuildTimeConfig.SERVICES_POSTHOG_APIKEY.isNullOrEmpty().not() &&
             BuildTimeConfig.SERVICES_POSTHOG_HOST.isNullOrEmpty().not()

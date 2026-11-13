@@ -11,7 +11,6 @@
 import com.android.build.api.variant.FilterConfiguration.FilterType.ABI
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.build.gradle.tasks.GenerateBuildConfig
-import com.google.firebase.appdistribution.gradle.firebaseAppDistribution
 import config.BuildTimeConfig
 import extension.AssetCopyTask
 import extension.GitBranchNameValueSource
@@ -30,8 +29,7 @@ import java.util.Locale
 
 plugins {
     id("io.element.android-compose-application")
-    // When using precompiled plugins, we need to apply the firebase plugin like this
-    id(libs.plugins.firebaseAppDistribution.get().pluginId)
+    // PSST: Firebase App Distribution plugin removed.
     id("kotlin-parcelize")
     alias(libs.plugins.licensee)
     alias(libs.plugins.kotlin.serialization)
@@ -48,9 +46,9 @@ android {
         versionCode = Versions.VERSION_CODE
         versionName = Versions.VERSION_NAME
 
-        // Keep abiFilter for the universalApk
+        // PSST: only arm64-v8a, armeabi-v7a (phones) and x86_64 (emulator / Chromebooks); 32-bit x86 dropped.
         ndk {
-            abiFilters += listOf("armeabi-v7a", "x86", "arm64-v8a", "x86_64")
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
         }
 
         // Ref: https://developer.android.com/studio/build/configure-apk-splits.html#configure-abi-split
@@ -69,9 +67,9 @@ android {
 
                 if (!buildingAppBundle) {
                     // Specifies a list of ABIs that Gradle should create APKs for.
-                    include("armeabi-v7a", "x86", "arm64-v8a", "x86_64")
-                    // Generate a universal APK that includes all ABIs, so user who installs from CI tool can use this one by default.
-                    isUniversalApk = true
+                    // PSST: one APK per supported ABI, no universal APK.
+                    include("armeabi-v7a", "arm64-v8a", "x86_64")
+                    isUniversalApk = false
                 }
             }
         }
@@ -124,7 +122,9 @@ android {
                 "login_redirect_scheme",
                 oAuthRedirectSchemeBase,
             )
-            signingConfig = signingConfigs.getByName("debug")
+            // PSST: release artifacts are built UNSIGNED; they are signed locally with the psst release key
+            // (scripts/android/sign-release.sh in georgonr/psst). The key never leaves the release machine.
+            signingConfig = null
 
             optimization {
                 enable = true
@@ -151,6 +151,7 @@ android {
             matchingFallbacks += listOf("release")
             signingConfig = signingConfigs.getByName("nightly")
 
+            /* PSST: Firebase App Distribution removed.
             firebaseAppDistribution {
                 artifactType = "APK"
                 // We upload the universal APK to fix this error:
@@ -173,6 +174,7 @@ android {
                     "1:912726360885:android:e17435e0beb0303000427c"
                 }
             }
+            */
         }
     }
 
@@ -182,14 +184,15 @@ android {
     }
     flavorDimensions += "store"
     productFlavors {
+        // PSST: the "fdroid" flavour is the one we build and ship (no Google Play Services / Firebase).
         create("gplay") {
             dimension = "store"
-            isDefault = true
             buildConfigFieldStr("SHORT_FLAVOR_DESCRIPTION", "G")
             buildConfigFieldStr("FLAVOR_DESCRIPTION", "GooglePlay")
         }
         create("fdroid") {
             dimension = "store"
+            isDefault = true
             buildConfigFieldStr("SHORT_FLAVOR_DESCRIPTION", "F")
             buildConfigFieldStr("FLAVOR_DESCRIPTION", "FDroid")
         }

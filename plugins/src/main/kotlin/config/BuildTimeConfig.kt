@@ -8,17 +8,27 @@
 
 package config
 
+// PSST: build-time configuration of the psst client (homeserver lock lives in DefaultEnterpriseService).
 object BuildTimeConfig {
-    const val APPLICATION_ID = "io.element.android.x"
-    const val APPLICATION_NAME = "Element X"
-    val METADATA_HOST_REVERSED: String? = null
-    val OAUTH_CLIENT_URL_PATH: String? = "apps/android"
-    val URL_WEBSITE: String? = null
-    val URL_LOGO: String? = null
-    val URL_COPYRIGHT: String? = null
-    val URL_ACCEPTABLE_USE: String? = null
-    val URL_PRIVACY: String? = null
-    val URL_POLICY: String? = null
+    // PSST: the only homeserver (account provider) the app may connect to.
+    const val PSST_HOMESERVER = "chat.macet.eu"
+
+    // PSST: public source code of this AGPL fork, linked from the About screen.
+    const val PSST_SOURCE_URL = "https://github.com/georgonr/psst-android"
+
+    // PSST: private branding (applicationId / app name).
+    const val APPLICATION_ID = "eu.macet.psst"
+    const val APPLICATION_NAME = "psst"
+    // PSST: OAuth redirect scheme = reversed sub-domain of URL_WEBSITE host (app.macet.eu).
+    val METADATA_HOST_REVERSED: String? = "eu.macet.app"
+    val OAUTH_CLIENT_URL_PATH: String? = null
+    // PSST: no element.io URLs. Legal pages are expected on app.macet.eu (same host as the OAuth client URI).
+    val URL_WEBSITE: String? = "https://app.macet.eu"
+    val URL_LOGO: String? = "https://app.macet.eu/favicon.ico"
+    val URL_COPYRIGHT: String? = "https://github.com/georgonr/psst-android/blob/psst/LICENSE"
+    val URL_ACCEPTABLE_USE: String? = "https://app.macet.eu/terms.html"
+    val URL_PRIVACY: String? = "https://app.macet.eu/privacy.html"
+    val URL_POLICY: String? = "https://app.macet.eu/privacy.html"
     val SERVICES_MAPTILER_BASE_URL: String? = null
     val SERVICES_MAPTILER_APIKEY: String? = null
     val SERVICES_MAPTILER_LIGHT_MAPID: String? = null
@@ -27,11 +37,13 @@ object BuildTimeConfig {
     val SERVICES_POSTHOG_APIKEY: String? = null
     val SERVICES_SENTRY_DSN: String? = null
     val SERVICES_SENTRY_DSN_RUST: String? = null
+    // PSST: no rageshake server (Element's rageshakes.element.io is not used).
     val BUG_REPORT_URL: String? = null
     val BUG_REPORT_APP_NAME: String? = null
-    const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = true
+    // PSST: Firebase (FCM via Element's Firebase project + matrix.org Sygnal) removed, UnifiedPush only.
+    const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = false
     const val PUSH_CONFIG_INCLUDE_UNIFIED_PUSH: Boolean = true
-    val PUSHER_APP_ID_RELEASE: String? = null
-    val PUSHER_APP_ID_DEBUG: String? = null
-    val PUSHER_APP_ID_NIGHTLY: String? = null
+    val PUSHER_APP_ID_RELEASE: String? = "eu.macet.psst"
+    val PUSHER_APP_ID_DEBUG: String? = "eu.macet.psst.debug"
+    val PUSHER_APP_ID_NIGHTLY: String? = "eu.macet.psst.nightly"
 }
