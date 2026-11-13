@@ -8,8 +8,11 @@
 package io.element.android.features.login.impl.screens.classic
 
 import dev.zacsweers.metro.Inject
+import io.element.android.features.enterprise.api.EnterpriseService
 import io.element.android.features.login.impl.classic.ElementClassicConnection
 import io.element.android.features.login.impl.classic.ElementClassicConnectionState
+import io.element.android.libraries.core.uri.ensureProtocol
+import io.element.android.libraries.matrix.api.accountprovider.AccountProvider
 import io.element.android.libraries.sessionstorage.api.SessionStore
 import io.element.android.libraries.sessionstorage.api.toUserListFlow
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,6 +28,8 @@ import kotlinx.coroutines.flow.flowOf
 class ClassicFlowNodeHelper(
     private val elementClassicConnection: ElementClassicConnection,
     private val sessionStore: SessionStore,
+    // PSST: used to ignore Element Classic sessions on homeservers other than the psst one.
+    private val enterpriseService: EnterpriseService,
 ) {
     fun onResume() {
         elementClassicConnection.requestSession()
@@ -59,7 +64,13 @@ class ClassicFlowNodeHelper(
                     }
                     is ElementClassicConnectionState.ElementClassicReady -> {
                         val existingSessions = sessionStore.sessionsFlow().toUserListFlow().first()
-                        if (elementClassicConnectionState.elementClassicSession.userId.value in existingSessions) {
+                        // PSST: never offer to import an Element Classic session from another homeserver.
+                        val classicDomain = elementClassicConnectionState.elementClassicSession.userId.domainName.orEmpty()
+                        val isAllowedHomeserver = enterpriseService.isAllowedToConnectToAccountProvider(
+                            AccountProvider.Generic(classicDomain.ensureProtocol())
+                        )
+                        if (!isAllowedHomeserver ||
+                            elementClassicConnectionState.elementClassicSession.userId.value in existingSessions) {
                             flowOf(NavigationEvent.NavigateToOnBoarding)
                         } else {
                             // 2 cases when this can be run:

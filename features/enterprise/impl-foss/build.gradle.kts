@@ -1,3 +1,5 @@
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
@@ -15,6 +17,14 @@ plugins {
 
 android {
     namespace = "io.element.android.features.enterprise.impl"
+
+    // PSST: the locked homeserver is injected from BuildTimeConfig.
+    buildFeatures {
+        buildConfig = true
+    }
+    defaultConfig {
+        buildConfigFieldStr("PSST_HOMESERVER", BuildTimeConfig.PSST_HOMESERVER)
+    }
 }
 
 setupDependencyInjection()

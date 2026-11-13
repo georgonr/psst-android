@@ -16,7 +16,15 @@ import io.element.android.features.login.api.LoginParams
 
 @ContributesBinding(AppScope::class)
 class DefaultLoginIntentResolver : LoginIntentResolver {
+    private companion object {
+        // PSST
+        const val PSST_LOGIN_LINKS_DISABLED = true
+    }
+
     override fun parse(uriString: String): LoginParams? {
+        // PSST: mobile.element.io login links are not supported, the app is locked to its own homeserver.
+        @Suppress("ConstantConditionIf")
+        if (PSST_LOGIN_LINKS_DISABLED) return null
         val uri = uriString.toUri()
         if (uri.host != "mobile.element.io") return null
         if (uri.path.orEmpty().startsWith("/element").not()) return null

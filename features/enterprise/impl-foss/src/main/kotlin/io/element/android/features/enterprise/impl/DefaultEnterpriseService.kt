@@ -37,10 +37,21 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
-    override fun accountProviderAllowList(): List<AccountProvider> = emptyList()
-    override fun canConnectToAnyAccountProvider(): Boolean = true
-    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) = true
-    override suspend fun isElementProEnforced(serverName: String): Boolean = withContext(dispatchers.io) {
+    // PSST: the app is locked to a single homeserver (chat.macet.eu). With a singleton allow list and
+    // canConnectToAnyAccountProvider() == false, the onboarding only offers "Sign in to chat.macet.eu",
+    // never the "change account provider" / free text server input, and every other entry point
+    // (login links, QR code login, Element Classic import) is rejected by the access control.
+    override fun accountProviderAllowList(): List<AccountProvider> = listOf(psstAccountProvider)
+    override fun canConnectToAnyAccountProvider(): Boolean = false
+    override suspend fun isAllowedToConnectToAccountProvider(accountProvider: AccountProvider) =
+        accountProviderAllowList().any { it.matches(accountProvider) }
+
+    // PSST: the upstream implementation fetches /.well-known/element/element.json to detect homeservers that require
+    // Element Pro. psst only ever talks to its own homeserver, so this check (and the extra request) is not needed.
+    override suspend fun isElementProEnforced(serverName: String): Boolean = false
+
+    @Suppress("unused")
+    private suspend fun upstreamIsElementProEnforced(serverName: String): Boolean = withContext(dispatchers.io) {
         val temporaryMatrixClient = temporaryMatrixClientFactory.create(serverName).getOrElse { return@withContext false }
         temporaryMatrixClient.use { client ->
             val baseUrl = serverName.ensureProtocol().removeSuffix("/")
@@ -59,19 +70,21 @@ class DefaultEnterpriseService(
 
     override suspend fun overrideBrandColor(sessionId: SessionId?, brandColor: String?) = Unit
 
+    // PSST: brand (accent) colour #38BDF8, see PsstColors.
     override fun brandColorsFlow(sessionId: SessionId?): Flow<Color?> {
-        return flowOf(null)
+        return flowOf(PsstColors.accent)
     }
 
     override fun semanticColorsFlow(sessionId: SessionId?): Flow<SemanticColorsLightDark> {
-        return flowOf(SemanticColorsLightDark.default)
+        return flowOf(PsstColors.semanticColors)
     }
 
     override fun firebasePushGateway(): String? = null
     override fun unifiedPushDefaultPushGateway(): String? = null
 
+    // PSST: bug reports (rageshakes) are disabled, nothing is sent to Element's rageshake server.
     override fun bugReportUrlFlow(sessionId: SessionId?): Flow<BugReportUrl> {
-        return flowOf(BugReportUrl.UseDefault)
+        return flowOf(BugReportUrl.Disabled)
     }
 
     override fun getNoisyNotificationChannelId(sessionId: SessionId): String? = null
@@ -80,6 +93,11 @@ class DefaultEnterpriseService(
 /**
  * A minimal version of the enterprise config that only contains the fields we need to check if Element Pro is enforced.
  */
+// PSST: the only allowed account provider. Server discovery (/.well-known/matrix/client) happens on this host.
+internal val psstAccountProvider = AccountProvider.Generic(
+    serverName = BuildConfig.PSST_HOMESERVER,
+)
+
 @Serializable
 private data class MinimalEnterpriseConfig(
     @SerialName("enforce_element_pro") val enforceElementPro: Boolean? = null,

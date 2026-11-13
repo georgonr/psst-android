@@ -12,6 +12,7 @@ package io.element.android.features.login.impl.screens.classic
 import androidx.core.graphics.createBitmap
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import io.element.android.features.enterprise.test.FakeEnterpriseService
 import io.element.android.features.login.impl.classic.ElementClassicConnection
 import io.element.android.features.login.impl.classic.ElementClassicConnectionState
 import io.element.android.features.login.impl.classic.FakeElementClassicConnection
@@ -279,7 +280,10 @@ class ClassicFlowNodeHelperTest : RobolectricTest() {
 private fun createHelper(
     elementClassicConnection: ElementClassicConnection = FakeElementClassicConnection(),
     sessionStore: SessionStore = InMemorySessionStore(),
+    // PSST
+    enterpriseService: FakeEnterpriseService = FakeEnterpriseService(isAllowedToConnectToAccountProviderResult = { true }),
 ) = ClassicFlowNodeHelper(
     elementClassicConnection = elementClassicConnection,
     sessionStore = sessionStore,
+    enterpriseService = enterpriseService,
 )
