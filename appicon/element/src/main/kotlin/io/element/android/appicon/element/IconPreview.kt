@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -24,13 +25,14 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 internal fun IconPreview() {
     Box {
-        Image(
-            modifier = Modifier.matchParentSize(),
-            painter = painterResource(id = R.drawable.ic_launcher_background),
-            contentDescription = null,
+        // PSST: the background is a plain colour (#0F172A)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(colorResource(id = R.color.ic_launcher_background)),
         )
         Image(
-            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = null,
         )
     }
@@ -40,13 +42,14 @@ internal fun IconPreview() {
 @Composable
 internal fun RoundIconPreview() {
     Box(modifier = Modifier.clip(shape = CircleShape)) {
-        Image(
-            modifier = Modifier.matchParentSize(),
-            painter = painterResource(id = R.drawable.ic_launcher_background),
-            contentDescription = null,
+        // PSST: the background is a plain colour (#0F172A)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(colorResource(id = R.color.ic_launcher_background)),
         )
         Image(
-            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+            painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = null,
         )
     }
@@ -60,7 +63,7 @@ internal fun MonochromeIconPreview() {
             .background(Color(0xFF2F3133)),
     ) {
         Image(
-            painter = painterResource(id = R.mipmap.ic_launcher_monochrome),
+            painter = painterResource(id = R.drawable.ic_launcher_monochrome),
             colorFilter = ColorFilter.tint(Color(0xFFC3E0F6)),
             contentDescription = null
         )

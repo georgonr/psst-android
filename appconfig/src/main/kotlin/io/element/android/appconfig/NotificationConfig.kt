@@ -28,5 +28,6 @@ object NotificationConfig {
     const val SHOW_QUICK_REPLY_ACTION = true
 
     @ColorInt
-    val NOTIFICATION_ACCENT_COLOR: Int = "#FF0DBD8B".toColorInt()
+    // PSST: accent colour #38BDF8
+    val NOTIFICATION_ACCENT_COLOR: Int = "#FF38BDF8".toColorInt()
 }
