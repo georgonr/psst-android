@@ -294,7 +294,8 @@ dependencies {
 
     // Google Play Services fused location backend. Discovered at runtime via ServiceLoader by the
     // location feature.
-    "gplayImplementation"(libs.maplibre.compose.location.runtime.gms)
+    // PSST: removed, no Google Play Services in any flavour (the "gplay" flavour then has the same dependencies as "fdroid").
+    // "gplayImplementation"(libs.maplibre.compose.location.runtime.gms)
 
     implementation(libs.appyx.core)
     implementation(libs.androidx.splash)
