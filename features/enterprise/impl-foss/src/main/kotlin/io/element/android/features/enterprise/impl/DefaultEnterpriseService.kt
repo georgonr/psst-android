@@ -90,14 +90,14 @@ class DefaultEnterpriseService(
     override fun getNoisyNotificationChannelId(sessionId: SessionId): String? = null
 }
 
-/**
- * A minimal version of the enterprise config that only contains the fields we need to check if Element Pro is enforced.
- */
 // PSST: the only allowed account provider. Server discovery (/.well-known/matrix/client) happens on this host.
 internal val psstAccountProvider = AccountProvider.Generic(
     serverName = BuildConfig.PSST_HOMESERVER,
 )
 
+/**
+ * A minimal version of the enterprise config that only contains the fields we need to check if Element Pro is enforced.
+ */
 @Serializable
 private data class MinimalEnterpriseConfig(
     @SerialName("enforce_element_pro") val enforceElementPro: Boolean? = null,
