@@ -13,9 +13,9 @@ object UnifiedPushConfig {
      * It is the push gateway for UnifiedPush.
      * Note: default_push_gateway_http_url should have path '/_matrix/push/v1/notify'
      */
-    // PSST: self-hosted ntfy (ntfy.macet.eu) implements the Matrix push gateway; used when the distributor's server
+    // PSST: self-hosted ntfy (push.macet.eu) implements the Matrix push gateway; used when the distributor's server
     // does not expose its own gateway (matrix.gateway.unifiedpush.org is not used).
-    const val DEFAULT_PUSH_GATEWAY_HTTP_URL: String = "https://ntfy.macet.eu/_matrix/push/v1/notify"
+    const val DEFAULT_PUSH_GATEWAY_HTTP_URL: String = "https://push.macet.eu/_matrix/push/v1/notify"
 
     const val UNIFIED_PUSH_DISTRIBUTORS_URL = "https://unifiedpush.org/users/distributors/"
 
