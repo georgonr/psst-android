@@ -47,8 +47,12 @@ android {
         versionName = Versions.VERSION_NAME
 
         // PSST: only arm64-v8a, armeabi-v7a (phones) and x86_64 (emulator / Chromebooks); 32-bit x86 dropped.
-        ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+        // ndk.abiFilters conflicts with splits.abi, so it is applied only for the AAB (splits disabled there);
+        // APKs are restricted by splits.abi.include below.
+        if (gradle.startParameter.taskNames.any { it.contains("bundle") }) {
+            ndk {
+                abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64")
+            }
         }
 
         // Ref: https://developer.android.com/studio/build/configure-apk-splits.html#configure-abi-split
