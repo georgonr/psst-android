@@ -188,15 +188,16 @@ android {
     }
     flavorDimensions += "store"
     productFlavors {
-        // PSST: the "fdroid" flavour is the one we build and ship (no Google Play Services / Firebase).
+        // PSST: the "gplay" flavour is the one we build and ship: Firebase Cloud Messaging only (no other Google
+        // services, no Analytics). "fdroid" has no push provider at all now (UnifiedPush removed).
         create("gplay") {
             dimension = "store"
+            isDefault = true
             buildConfigFieldStr("SHORT_FLAVOR_DESCRIPTION", "G")
             buildConfigFieldStr("FLAVOR_DESCRIPTION", "GooglePlay")
         }
         create("fdroid") {
             dimension = "store"
-            isDefault = true
             buildConfigFieldStr("SHORT_FLAVOR_DESCRIPTION", "F")
             buildConfigFieldStr("FLAVOR_DESCRIPTION", "FDroid")
         }

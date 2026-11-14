@@ -42,9 +42,10 @@ object BuildTimeConfig {
     // PSST: no rageshake server (Element's rageshakes.element.io is not used).
     val BUG_REPORT_URL: String? = null
     val BUG_REPORT_APP_NAME: String? = null
-    // PSST: Firebase (FCM via Element's Firebase project + matrix.org Sygnal) removed, UnifiedPush only.
-    const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = false
-    const val PUSH_CONFIG_INCLUDE_UNIFIED_PUSH: Boolean = true
+    // PSST: Firebase Cloud Messaging is the only push provider (our own Firebase project "psst-macet" and our own
+    // Sygnal at chat.macet.eu, event_id_only). UnifiedPush is removed so the app never asks for a second app.
+    const val PUSH_CONFIG_INCLUDE_FIREBASE: Boolean = true
+    const val PUSH_CONFIG_INCLUDE_UNIFIED_PUSH: Boolean = false
     val PUSHER_APP_ID_RELEASE: String? = "eu.macet.psst"
     val PUSHER_APP_ID_DEBUG: String? = "eu.macet.psst.debug"
     val PUSHER_APP_ID_NIGHTLY: String? = "eu.macet.psst.nightly"

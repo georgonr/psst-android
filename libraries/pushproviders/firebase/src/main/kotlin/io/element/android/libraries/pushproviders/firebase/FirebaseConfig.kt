@@ -13,7 +13,8 @@ object FirebaseConfig {
      * It is the push gateway for firebase.
      * Note: pusher_http_url should have path '/_matrix/push/v1/notify' -->
      */
-    const val PUSHER_HTTP_URL: String = "https://matrix.org/_matrix/push/v1/notify"
+    // PSST: our own Sygnal (FCM HTTP v1) behind nginx on the homeserver domain — not Element's / matrix.org's.
+    const val PUSHER_HTTP_URL: String = "https://chat.macet.eu/_matrix/push/v1/notify"
 
     const val INDEX = 0
     const val NAME = "Firebase"
