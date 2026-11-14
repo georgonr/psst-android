@@ -44,7 +44,9 @@ import timber.log.Timber
  * IDs for channels
  * ========================================================================================== */
 internal const val SILENT_NOTIFICATION_CHANNEL_ID = "DEFAULT_SILENT_NOTIFICATION_CHANNEL_ID_V2"
-internal const val NOISY_NOTIFICATION_CHANNEL_ID_BASE = "DEFAULT_NOISY_NOTIFICATION_CHANNEL_ID_V2"
+// PSST: new id → channel is recreated with IMPORTANCE_HIGH (heads-up), and stale user/legacy settings are reset (D53).
+internal const val NOISY_NOTIFICATION_CHANNEL_ID_BASE = "PSST_NOISY_NOTIFICATION_CHANNEL_ID_V3"
+private const val LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASE = "DEFAULT_NOISY_NOTIFICATION_CHANNEL_ID_V2"
 internal const val CALL_NOTIFICATION_CHANNEL_ID = "CALL_NOTIFICATION_CHANNEL_ID_V3"
 internal const val RINGING_CALL_NOTIFICATION_CHANNEL_ID_BASE = "RINGING_CALL_NOTIFICATION_CHANNEL_ID"
 
@@ -162,6 +164,7 @@ class DefaultNotificationChannels(
         }
         // Drop older versioned channels; only the current one remains.
         deleteStaleVersionedChannels(NOISY_NOTIFICATION_CHANNEL_ID_BASE, currentNoisyChannelId)
+        deleteStaleVersionedChannels(LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASE, currentNoisyChannelId)
         deleteStaleVersionedChannels(RINGING_CALL_NOTIFICATION_CHANNEL_ID_BASE, currentRingingCallChannelId)
 
         // Default notification importance: shows everywhere, makes noise, but does not visually intrude.
@@ -216,7 +219,8 @@ class DefaultNotificationChannels(
     }
 
     private fun buildNoisyChannel(channelId: String, soundUri: Uri?, accentColor: Int): NotificationChannelCompat {
-        val builder = NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_DEFAULT)
+        // PSST: IMPORTANCE_HIGH (upstream DEFAULT) — messages pop up on screen, not only in the shade.
+        val builder = NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_HIGH)
             .setName(stringProvider.getString(R.string.notification_channel_noisy).ifEmpty { "Noisy notifications" })
             .setDescription(stringProvider.getString(R.string.notification_channel_noisy))
             .setVibrationEnabled(true)

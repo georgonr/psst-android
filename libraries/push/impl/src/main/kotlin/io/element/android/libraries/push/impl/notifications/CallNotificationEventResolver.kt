@@ -74,7 +74,10 @@ class DefaultCallNotificationEventResolver(
                     notificationData.roomId
                 ) ?: throw NotificationResolverException.UnknownError("Room ${notificationData.roomId} not found")
                 // Give a few seconds for the room info flow to catch up with the sync, if needed - this is usually instant
-                val isActive = withTimeoutOrNull(3.seconds) { room.roomInfoFlow.firstOrNull { it.hasRoomCall } }?.hasRoomCall ?: false
+                // PSST: 3 s is too short when the app is cold-started by the push on low-end phones (no ringing at all).
+                // Wait longer, and if the call state still is not known, ring while the ring itself has not expired (D53).
+                val isActive = withTimeoutOrNull(12.seconds) { room.roomInfoFlow.firstOrNull { it.hasRoomCall } }?.hasRoomCall
+                    ?: (System.currentTimeMillis() < content.expirationTimestampMillis)
 
                 // We no longer need the sync service to be active because of a call notification.
                 appForegroundStateService.updateHasRingingCall(previousRingingCallStatus)
