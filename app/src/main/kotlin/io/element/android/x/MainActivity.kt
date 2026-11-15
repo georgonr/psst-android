@@ -171,6 +171,8 @@ class MainActivity : NodeActivity() {
     override fun onResume() {
         super.onResume()
         Timber.tag(loggerTag.value).d("onResume")
+        // PSST (D57): full-screen calls + battery optimisation, on first start / after update / after a missed call
+        io.element.android.features.call.impl.psst.PsstCallReadiness.maybePrompt(this)
     }
 
     override fun onDestroy() {

@@ -146,6 +146,9 @@ class RingingCallNotificationCreator(
             false
         )
 
+        // PSST (D57): without the full-screen permission the call only rings on the lock screen → remind the user
+        io.element.android.features.call.impl.psst.PsstCallReadiness.onIncomingCallShown(context)
+
         return NotificationCompat.Builder(context, notificationChannelId)
             .setSmallIcon(CommonDrawables.ic_notification)
             .setPriority(NotificationCompat.PRIORITY_MAX)

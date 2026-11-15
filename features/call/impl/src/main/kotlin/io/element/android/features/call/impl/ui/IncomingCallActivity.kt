@@ -85,6 +85,12 @@ class IncomingCallActivity : AppCompatActivity() {
 
         bindings<CallBindings>().inject(this)
 
+        // PSST (D57): show over the lock screen and turn the display on (API 27+ way; the window flags below are
+        // ignored for this on recent Android versions). The call can be answered without unlocking first.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
         // Set flags so it can be displayed in the lock screen
         @Suppress("DEPRECATION")
         window.addFlags(
