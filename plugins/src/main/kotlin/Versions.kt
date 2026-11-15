@@ -56,14 +56,16 @@ object Versions {
      */
     // PSST: every build has its own number (CI: PSST_BUILD_NUMBER = GitHub run number) and date (PSST_BUILD_DATE,
     // YYYYMMDD). versionCode = (21_000_000 + build) * 10 + ABI, always above upstream's 202611xxx so it installs
-    // over older psst APKs. Shown in Settings → About as "26.11.0-b42 (2026-11-15)". See BUILD.md / DECISIONS D54.
+    // over older psst APKs. Shown in Settings → About as "26.11.0-b42+2026-11-15". See BUILD.md / DECISIONS D54.
     val PSST_BUILD_NUMBER: Int = System.getenv("PSST_BUILD_NUMBER")?.toIntOrNull() ?: 0
     val PSST_BUILD_DATE: String = System.getenv("PSST_BUILD_DATE")
         ?: java.time.LocalDate.now(java.time.ZoneOffset.UTC).format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE)
     val VERSION_CODE = 21_000_000 + PSST_BUILD_NUMBER
     private val UPSTREAM_VERSION_NAME = "$versionYear.${versionMonth.toString().padStart(2, '0')}.$versionReleaseNumber"
-    val VERSION_NAME = UPSTREAM_VERSION_NAME + "-b$PSST_BUILD_NUMBER (" +
-        "${PSST_BUILD_DATE.substring(0, 4)}-${PSST_BUILD_DATE.substring(4, 6)}-${PSST_BUILD_DATE.substring(6, 8)})"
+    // No spaces/parentheses: versionName is part of the User-Agent ("psst/<versionName> (<device>; …)") and
+    // servers take the device name from the first parentheses (D60).
+    val VERSION_NAME = UPSTREAM_VERSION_NAME + "-b$PSST_BUILD_NUMBER+" +
+        "${PSST_BUILD_DATE.substring(0, 4)}-${PSST_BUILD_DATE.substring(4, 6)}-${PSST_BUILD_DATE.substring(6, 8)}"
 
     /**
      * Compile SDK version. Must be updated when a new Android version is released.
