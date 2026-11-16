@@ -44,6 +44,7 @@ class DefaultNotificationDisplayer(
         }
         notificationManager.notify(tag, id, notification)
         io.element.android.libraries.push.impl.psst.PsstNotifLog.posted(context, tag, id, notification)
+        io.element.android.libraries.push.impl.psst.PsstScreenWake.maybeWake(context, notification)
         Timber.d("Notifying with tag: $tag, id: $id")
         return true
     }

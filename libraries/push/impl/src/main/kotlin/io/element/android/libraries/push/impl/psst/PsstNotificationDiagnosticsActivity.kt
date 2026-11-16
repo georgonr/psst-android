@@ -125,63 +125,6 @@ class PsstNotificationDiagnosticsActivity : Activity() {
         handler.postDelayed({ postTest(app, chatLike) }, 10_000)
     }
 
-    private fun messagesChannelId(nm: NotificationManager): String? =
-        if (Build.VERSION.SDK_INT >= 26) nm.notificationChannels.map { it.id }.filter { it.startsWith("PSST_MESSAGES") }.maxOrNull() else "x"
-
-    private fun postTest(app: Context, chatLike: Boolean) {
-        val nm = app.getSystemService(NotificationManager::class.java)
-        val channel = messagesChannelId(nm)
-        if (channel == null) {
-            PsstNotifLog.add(app, "TEST failed: messages channel missing")
-            return
-        }
-        val open = app.packageManager.getLaunchIntentForPackage(app.packageName)
-        val pi = PendingIntent.getActivity(app, 7_500, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val now = System.currentTimeMillis()
-        val body = t("Testovacia správa psst — ${SimpleDateFormat("HH:mm:ss", Locale.US).format(Date(now))}", "psst test message")
-        val builder = NotificationCompat.Builder(app, channel)
-            .setSmallIcon(CommonDrawables.ic_notification)
-            .setContentIntent(pi)
-            .setAutoCancel(true)
-            .setWhen(now)
-            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-        val id: Int
-        if (chatLike) {
-            // same shape as a real message notification: MessagingStyle, own group with a silent summary
-            val me = Person.Builder().setName(t("Ja", "Me")).build()
-            val other = Person.Builder().setName("psst test").build()
-            builder.setStyle(
-                NotificationCompat.MessagingStyle(me).setConversationTitle("psst test").addMessage(body, now, other)
-            )
-                .setGroup(GROUP)
-                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            id = 7_501
-        } else {
-            builder.setContentTitle("psst test").setContentText(body).setPriority(NotificationCompat.PRIORITY_HIGH)
-            id = 7_502
-        }
-        if (Build.VERSION.SDK_INT >= 33 && app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            PsstNotifLog.add(app, "TEST not posted: permission missing")
-            return
-        }
-        val n = builder.build()
-        NotificationManagerCompat.from(app).notify("psst-test", id, n)
-        PsstNotifLog.posted(app, "psst-test", id, n)
-        if (chatLike) {
-            val summary = NotificationCompat.Builder(app, channel)
-                .setSmallIcon(CommonDrawables.ic_notification)
-                .setGroup(GROUP)
-                .setGroupSummary(true)
-                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
-                .setOnlyAlertOnce(true)
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .build()
-            NotificationManagerCompat.from(app).notify("psst-test", 7_503, summary)
-            PsstNotifLog.posted(app, "psst-test", 7_503, summary)
-        }
-    }
-
     // --------------------------------------------------------------------------------------------------------- report
 
     private fun buildReport(): String = buildString {
@@ -311,5 +254,63 @@ class PsstNotificationDiagnosticsActivity : Activity() {
 
     companion object {
         private const val GROUP = "psst-test"
+
+        private fun messagesChannelId(nm: NotificationManager): String? =
+            if (Build.VERSION.SDK_INT >= 26) nm.notificationChannels.map { it.id }.filter { it.startsWith("PSST_MESSAGES") }.maxOrNull() else "x"
+
+        fun postTest(app: Context, chatLike: Boolean) {
+            val nm = app.getSystemService(NotificationManager::class.java)
+            val channel = messagesChannelId(nm)
+            if (channel == null) {
+                PsstNotifLog.add(app, "TEST failed: messages channel missing")
+                return
+            }
+            val open = app.packageManager.getLaunchIntentForPackage(app.packageName)
+            val pi = PendingIntent.getActivity(app, 7_500, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            val now = System.currentTimeMillis()
+            val body = (if (Locale.getDefault().language in setOf("sk", "cs")) "Testovacia správa psst — " else "psst test message — ") + SimpleDateFormat("HH:mm:ss", Locale.US).format(Date(now))
+            val builder = NotificationCompat.Builder(app, channel)
+                .setSmallIcon(CommonDrawables.ic_notification)
+                .setContentIntent(pi)
+                .setAutoCancel(true)
+                .setWhen(now)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            val id: Int
+            if (chatLike) {
+                // same shape as a real message notification: MessagingStyle, own group with a silent summary
+                val me = Person.Builder().setName(if (Locale.getDefault().language in setOf("sk", "cs")) "Ja" else "Me").build()
+                val other = Person.Builder().setName("psst test").build()
+                builder.setStyle(
+                    NotificationCompat.MessagingStyle(me).setConversationTitle("psst test").addMessage(body, now, other)
+                )
+                    .setGroup(GROUP)
+                    .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                id = 7_501
+            } else {
+                builder.setContentTitle("psst test").setContentText(body).setPriority(NotificationCompat.PRIORITY_HIGH)
+                id = 7_502
+            }
+            if (Build.VERSION.SDK_INT >= 33 && app.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                PsstNotifLog.add(app, "TEST not posted: permission missing")
+                return
+            }
+            val n = builder.build()
+            NotificationManagerCompat.from(app).notify("psst-test", id, n)
+            PsstNotifLog.posted(app, "psst-test", id, n)
+            PsstScreenWake.maybeWake(app, n)
+            if (chatLike) {
+                val summary = NotificationCompat.Builder(app, channel)
+                    .setSmallIcon(CommonDrawables.ic_notification)
+                    .setGroup(GROUP)
+                    .setGroupSummary(true)
+                    .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+                    .setOnlyAlertOnce(true)
+                    .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                    .build()
+                NotificationManagerCompat.from(app).notify("psst-test", 7_503, summary)
+                PsstNotifLog.posted(app, "psst-test", 7_503, summary)
+            }
+        }
     }
 }

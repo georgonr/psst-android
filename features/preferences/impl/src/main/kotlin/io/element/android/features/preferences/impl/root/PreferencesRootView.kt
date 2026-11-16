@@ -217,6 +217,24 @@ private fun AppSettingsSection(
     PreferenceCategory(
         title = stringResource(CommonStrings.common_app_settings),
     ) {
+        // PSST (D72): one screen with the real state of everything messages and calls need (toggles)
+        val psstContext = androidx.compose.ui.platform.LocalContext.current
+        ListItem(
+            content = {
+                Text(if (java.util.Locale.getDefault().language in setOf("sk", "cs")) "Upozornenia a hovory" else "Notifications & calls")
+            },
+            leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Notifications())),
+            onClick = {
+                runCatching {
+                    psstContext.startActivity(
+                        android.content.Intent().setClassName(
+                            psstContext,
+                            "io.element.android.libraries.push.impl.psst.PsstNotificationsCallsActivity",
+                        )
+                    )
+                }
+            },
+        )
         PreferenceDropdown(
             icon = CompoundIcons.DarkMode(),
             dropDownIcon = CompoundIcons.ChevronUpDown(),

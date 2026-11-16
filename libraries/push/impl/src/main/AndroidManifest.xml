@@ -9,6 +9,9 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- PSST (D73): wake the screen for a new message (special app access "Turn screen on", Android 14+) -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.TURN_SCREEN_ON" />
 
     <application>
         <service android:name=".push.FetchPushForegroundService"
@@ -24,6 +27,12 @@
             android:enabled="true"
             android:exported="false" />
 
+        <!-- PSST (D72): Settings → "Upozornenia a hovory" (toggles with the real system state) -->
+        <activity
+            android:name=".psst.PsstNotificationsCallsActivity"
+            android:exported="false"
+            android:label="psst"
+            android:theme="@android:style/Theme.DeviceDefault.Light" />
         <!-- PSST (D67): Settings → Notifications → notification diagnostics + optional listener (own notifications only) -->
         <activity
             android:name=".psst.PsstNotificationDiagnosticsActivity"
