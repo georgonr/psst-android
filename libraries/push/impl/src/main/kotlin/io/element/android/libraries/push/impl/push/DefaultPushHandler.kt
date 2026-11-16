@@ -83,6 +83,19 @@ class DefaultPushHandler(
             incrementPushDataStore.incrementPushCounter()
         }
 
+        io.element.android.libraries.push.impl.psst.PsstNotifLog.add(
+            "PUSH ev=${io.element.android.libraries.push.impl.psst.PsstNotifLog.short(pushData.eventId.value)} " +
+                "room=${io.element.android.libraries.push.impl.psst.PsstNotifLog.short(pushData.roomId.value)} via=$providerInfo"
+        )
+        // PSST (D68): server wake-up for a device verification request (to-device messages are never pushed)
+        if (io.element.android.libraries.push.impl.psst.PsstVerificationWake.isWake(pushData.roomId.value)) {
+            val known = pushClientSecret.getUserIdFromSecret(pushData.clientSecret) != null
+            io.element.android.libraries.push.impl.psst.PsstNotifLog.add("VERIFICATION WAKE session=$known")
+            io.element.android.libraries.push.impl.psst.PsstNotifLog.appContext?.takeIf { known }?.let {
+                io.element.android.libraries.push.impl.psst.PsstVerificationWake.show(it)
+            }
+            return@withContext false
+        }
         // Diagnostic Push
         if (pushData.eventId == DefaultTestPush.TEST_EVENT_ID) {
             pushHistoryService.onDiagnosticPush(providerInfo)

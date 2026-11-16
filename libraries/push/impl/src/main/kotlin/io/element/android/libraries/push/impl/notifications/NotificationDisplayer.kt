@@ -32,12 +32,18 @@ class DefaultNotificationDisplayer(
     @ApplicationContext private val context: Context,
     private val notificationManager: NotificationManagerCompat
 ) : NotificationDisplayer {
+    init {
+        io.element.android.libraries.push.impl.psst.PsstNotifLog.appContext = context.applicationContext
+    }
+
     override fun showNotification(tag: String?, id: Int, notification: Notification): Boolean {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            io.element.android.libraries.push.impl.psst.PsstNotifLog.add(context, "NOT POSTED: notification permission missing (id=$id)")
             Timber.w("Not allowed to notify.")
             return false
         }
         notificationManager.notify(tag, id, notification)
+        io.element.android.libraries.push.impl.psst.PsstNotifLog.posted(context, tag, id, notification)
         Timber.d("Notifying with tag: $tag, id: $id")
         return true
     }

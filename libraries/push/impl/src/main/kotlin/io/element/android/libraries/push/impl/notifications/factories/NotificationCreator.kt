@@ -388,6 +388,11 @@ class DefaultNotificationCreator(
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             // set this notification as the summary for the group
             .setGroupSummary(true)
+            // PSST (D67): only the per-room notification alerts. Upstream sets GROUP_ALERT_CHILDREN on the children,
+            // where it has no effect, so the summary (default GROUP_ALERT_ALL, same HIGH channel) alerts too. AOSP mutes
+            // it only through its 1-alert-per-second rate limit; other launchers may let the summary take the alert,
+            // which is invisible as a pop-up (a summary is never shown as heads-up) — sound without a pop-up.
+            .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
             .configureWith(notificationAccountParams)
             .apply {
                 if (noisy) {

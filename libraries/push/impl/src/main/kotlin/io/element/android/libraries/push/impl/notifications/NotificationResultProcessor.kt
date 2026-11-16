@@ -126,6 +126,21 @@ class DefaultNotificationResultProcessor(
     private suspend fun processResults(results: Map<PushRequest, Result<ResolvedPushEvent>>) {
         // TODO what happens with items that weren't reported back?
         for ((request, result) in results) {
+            io.element.android.libraries.push.impl.psst.PsstNotifLog.add(
+                "RESOLVED ev=${io.element.android.libraries.push.impl.psst.PsstNotifLog.short(request.eventId)} " +
+                    "room=${io.element.android.libraries.push.impl.psst.PsstNotifLog.short(request.roomId)} " +
+                    "after=${System.currentTimeMillis() - request.pushDate}ms result=" + result.fold(
+                        onSuccess = {
+                            val e = (it as? ResolvedPushEvent.Event)?.notifiableEvent
+                            when {
+                                e is FallbackNotifiableEvent -> "FALLBACK(${e.cause})"
+                                e != null -> "${e::class.simpleName}(noisy=${(e as? io.element.android.libraries.push.impl.notifications.model.NotifiableMessageEvent)?.noisy})"
+                                else -> it::class.simpleName.orEmpty()
+                            }
+                        },
+                        onFailure = { "ERROR(${it::class.simpleName})" },
+                    )
+            )
             result.fold(
                 onSuccess = {
                     if (it is ResolvedPushEvent.Event && it.notifiableEvent is FallbackNotifiableEvent) {

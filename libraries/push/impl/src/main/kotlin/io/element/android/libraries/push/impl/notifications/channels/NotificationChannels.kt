@@ -112,6 +112,7 @@ class DefaultNotificationChannels(
     private val recreateLock = Any()
 
     init {
+        io.element.android.libraries.push.impl.psst.PsstNotifLog.appContext = context.applicationContext
         createNotificationChannels()
     }
 

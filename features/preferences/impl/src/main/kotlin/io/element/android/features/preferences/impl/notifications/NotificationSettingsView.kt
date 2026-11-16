@@ -291,6 +291,23 @@ private fun TroubleshootCategory(
             },
             onClick = onTroubleshootNotificationsClick
         )
+        // PSST (D67): on-device notification diagnostics (channels, ranking, log, self-tests, export to a file)
+        val context = LocalContext.current
+        ListItem(
+            content = {
+                Text(if (java.util.Locale.getDefault().language in setOf("sk", "cs")) "Diagnostika upozornení (psst)" else "Notification diagnostics (psst)")
+            },
+            onClick = {
+                runCatching {
+                    context.startActivity(
+                        android.content.Intent().setClassName(
+                            context,
+                            "io.element.android.libraries.push.impl.psst.PsstNotificationDiagnosticsActivity",
+                        )
+                    )
+                }
+            }
+        )
     }
 }
 
