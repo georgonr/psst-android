@@ -44,9 +44,13 @@ import timber.log.Timber
  * IDs for channels
  * ========================================================================================== */
 internal const val SILENT_NOTIFICATION_CHANNEL_ID = "DEFAULT_SILENT_NOTIFICATION_CHANNEL_ID_V2"
-// PSST: new id → channel is recreated with IMPORTANCE_HIGH (heads-up), and stale user/legacy settings are reset (D53).
-internal const val NOISY_NOTIFICATION_CHANNEL_ID_BASE = "PSST_NOISY_NOTIFICATION_CHANNEL_ID_V3"
-private const val LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASE = "DEFAULT_NOISY_NOTIFICATION_CHANNEL_ID_V2"
+// PSST: new id → Android forgets remembered channel settings; the channel is recreated with IMPORTANCE_HIGH (pop-up),
+// lock screen visibility PRIVATE and the "Messages" name (D53, D61). Older ids are deleted below.
+internal const val NOISY_NOTIFICATION_CHANNEL_ID_BASE = "PSST_MESSAGES_V4"
+private val LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASES = listOf(
+    "DEFAULT_NOISY_NOTIFICATION_CHANNEL_ID_V2",
+    "PSST_NOISY_NOTIFICATION_CHANNEL_ID_V3",
+)
 internal const val CALL_NOTIFICATION_CHANNEL_ID = "CALL_NOTIFICATION_CHANNEL_ID_V3"
 internal const val RINGING_CALL_NOTIFICATION_CHANNEL_ID_BASE = "RINGING_CALL_NOTIFICATION_CHANNEL_ID"
 
@@ -164,7 +168,7 @@ class DefaultNotificationChannels(
         }
         // Drop older versioned channels; only the current one remains.
         deleteStaleVersionedChannels(NOISY_NOTIFICATION_CHANNEL_ID_BASE, currentNoisyChannelId)
-        deleteStaleVersionedChannels(LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASE, currentNoisyChannelId)
+        LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASES.forEach { deleteStaleVersionedChannels(it, currentNoisyChannelId) }
         deleteStaleVersionedChannels(RINGING_CALL_NOTIFICATION_CHANNEL_ID_BASE, currentRingingCallChannelId)
 
         // Default notification importance: shows everywhere, makes noise, but does not visually intrude.
@@ -218,26 +222,35 @@ class DefaultNotificationChannels(
         )
     }
 
-    private fun buildNoisyChannel(channelId: String, soundUri: Uri?, accentColor: Int): NotificationChannelCompat {
-        // PSST: IMPORTANCE_HIGH (upstream DEFAULT) — messages pop up on screen, not only in the shade.
-        val builder = NotificationChannelCompat.Builder(channelId, NotificationManagerCompat.IMPORTANCE_HIGH)
-            .setName(stringProvider.getString(R.string.notification_channel_noisy).ifEmpty { "Noisy notifications" })
-            .setDescription(stringProvider.getString(R.string.notification_channel_noisy))
-            .setVibrationEnabled(true)
-            .setLightsEnabled(true)
-            .setLightColor(accentColor)
-        if (soundUri != null) {
-            builder.setSound(
+    /**
+     * PSST: message channel built as a platform channel, because NotificationChannelCompat cannot set the lock screen
+     * visibility, and Android accepts it only when the channel is created (user changes win afterwards).
+     * IMPORTANCE_HIGH (upstream DEFAULT): messages pop up on screen, not only in the shade. VISIBILITY_PRIVATE: shown on
+     * the lock screen; content hidden only if the user chose "hide sensitive content".
+     */
+    @android.annotation.SuppressLint("NewApi")
+    private fun buildNoisyChannel(channelId: String, soundUri: Uri?, accentColor: Int): android.app.NotificationChannel {
+        val sk = java.util.Locale.getDefault().language in setOf("sk", "cs")
+        return android.app.NotificationChannel(
+            channelId,
+            if (sk) "Správy" else "Messages",
+            android.app.NotificationManager.IMPORTANCE_HIGH,
+        ).apply {
+            description = if (sk) "Nové správy (vyskakovacie okno, zvuk, zamknutá obrazovka)" else "New messages (pop-up, sound, lock screen)"
+            enableVibration(true)
+            enableLights(true)
+            lightColor = accentColor
+            lockscreenVisibility = android.app.Notification.VISIBILITY_PRIVATE
+            setSound(
                 soundUri,
-                AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(USAGE_NOTIFICATION)
-                    .build(),
+                soundUri?.let {
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(USAGE_NOTIFICATION)
+                        .build()
+                },
             )
-        } else {
-            builder.setSound(null, null)
         }
-        return builder.build()
     }
 
     private fun buildRingingCallChannel(channelId: String, soundUri: Uri?, accentColor: Int): NotificationChannelCompat {

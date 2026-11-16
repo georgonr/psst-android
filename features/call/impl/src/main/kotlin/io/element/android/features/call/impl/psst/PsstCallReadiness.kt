@@ -1,22 +1,22 @@
 /*
- * PSST: make incoming calls behave like phone calls on locked phones (DECISIONS D57).
+ * PSST: setup wizard so that messages and calls reach a phone like a phone call / SMS would (DECISIONS D57, D61).
  *
- * Android 14+ only lets an app show an incoming call full screen over the lock screen (screen turns on, caller,
- * Accept / Decline) when it holds the "full-screen notifications" permission (USE_FULL_SCREEN_INTENT). Samsung and
- * other OEMs leave it OFF for apps installed from an APK; then the call only rings as a lock-screen notification.
- * Upstream Element X shows just a dismissible banner in the room list, which is easy to miss.
+ * Steps, in this order, each only when something is actually missing:
+ *  1. notifications allowed for psst, and the message channel may pop up (importance HIGH),
+ *  2. notifications shown on the lock screen (channel not "secret", lock screen notifications not switched off),
+ *  3. full-screen notifications (USE_FULL_SCREEN_INTENT, Android 14+; Samsung leaves it OFF for APK installs),
+ *  4. no battery optimisation (Samsung otherwise puts the app to sleep).
  *
- * This helper:
- *  - on first start and after every update asks for the permission (one sentence + opens the exact settings screen),
- *    then asks to exclude psst from battery optimisation (Samsung otherwise puts the app to sleep),
- *  - when a call rings while the permission is missing, posts a notification that opens the setting and makes
- *    the next app start ask again.
+ * Settings are opened from the activity WITHOUT FLAG_ACTIVITY_NEW_TASK, so Back returns to psst. MainActivity.onResume
+ * calls [maybePrompt] again: it re-checks the real state and continues with the next missing step by itself.
+ * Each step is asked at most once per app version (plus again after a call rang without full-screen permission).
  */
 package io.element.android.features.call.impl.psst
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -26,23 +26,56 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import io.element.android.libraries.designsystem.utils.CommonDrawables
+import timber.log.Timber
 import java.util.Locale
 
 object PsstCallReadiness {
     private const val PREFS = "psst_call_readiness"
-    private const val KEY_FSI_ASKED_VERSION = "fsi_asked_version"
-    private const val KEY_BATTERY_ASKED_VERSION = "battery_asked_version"
     private const val KEY_FSI_REMIND = "fsi_remind_after_missed_call"
     private const val KEY_FSI_NOTIFIED = "fsi_missed_call_notified"
     private const val CHANNEL_ID = "PSST_CALL_SETUP"
     private const val NOTIFICATION_ID = 0x5057
 
+    /** Prefix of the message channel ids (libraries/push/impl … NotificationChannels.kt, MESSAGES channel). */
+    private const val MESSAGE_CHANNEL_PREFIX = "PSST_MESSAGES_V4"
+
+    enum class Step { NOTIFICATIONS, LOCK_SCREEN, FULL_SCREEN, BATTERY }
+
     @Volatile private var dialogShowing = false
 
     private fun sk(): Boolean = Locale.getDefault().language in setOf("sk", "cs")
+
+    private fun askedKey(step: Step) = "asked_${step.name.lowercase()}_version"
+
+    // ---- state checks -------------------------------------------------------------------------------------------
+
+    private fun messageChannel(context: Context): NotificationChannel? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null
+        return context.getSystemService<NotificationManager>()?.notificationChannels
+            ?.firstOrNull { it.id.startsWith(MESSAGE_CHANNEL_PREFIX) }
+    }
+
+    /** Notifications allowed for the app and the message channel may pop up on screen. */
+    fun notificationsReady(context: Context): Boolean {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return false
+        val channel = messageChannel(context) ?: return true
+        return channel.importance >= NotificationManager.IMPORTANCE_HIGH
+    }
+
+    /** Message notifications are not hidden from the lock screen (per channel or globally). */
+    fun lockScreenReady(context: Context): Boolean {
+        val channel = messageChannel(context)
+        if (channel != null && channel.lockscreenVisibility == Notification.VISIBILITY_SECRET) return false
+        // Hidden-but-readable secure setting (AOSP + Samsung); unreadable → assume on.
+        val global = runCatching {
+            Settings.Secure.getInt(context.contentResolver, "lock_screen_show_notifications", 1)
+        }.getOrDefault(1)
+        return global != 0
+    }
 
     fun canUseFullScreenIntent(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) return true
@@ -52,73 +85,133 @@ object PsstCallReadiness {
     fun isIgnoringBatteryOptimizations(context: Context): Boolean =
         context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) ?: true
 
+    fun isReady(context: Context, step: Step): Boolean = when (step) {
+        Step.NOTIFICATIONS -> notificationsReady(context)
+        Step.LOCK_SCREEN -> lockScreenReady(context)
+        Step.FULL_SCREEN -> canUseFullScreenIntent(context)
+        Step.BATTERY -> isIgnoringBatteryOptimizations(context)
+    }
+
     private fun versionCode(context: Context): Long =
         context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
 
+    // ---- settings intents (no NEW_TASK when started from the activity → Back returns to psst) --------------------
+
+    private fun appNotificationSettings(context: Context): Intent =
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+
+    private fun messageChannelSettings(context: Context): Intent {
+        val channel = messageChannel(context)
+        return if (channel != null && NotificationManagerCompat.from(context).areNotificationsEnabled()) {
+            Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                .putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
+        } else {
+            appNotificationSettings(context)
+        }
+    }
+
+    /** For the reminder notification (started from outside an activity → NEW_TASK is required there). */
     fun fullScreenIntentSettings(context: Context): Intent =
+        fullScreenIntentSettingsInTask(context).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    private fun fullScreenIntentSettingsInTask(context: Context): Intent =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, "package:${context.packageName}".toUri())
         } else {
-            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-        }.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            appNotificationSettings(context)
+        }
 
     @SuppressLint("BatteryLife")
     private fun batterySettings(context: Context): Intent =
         Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:${context.packageName}".toUri())
 
-    /** Called from MainActivity.onResume: asks for what is missing, at most once per app version (or after a missed call). */
-    fun maybePrompt(activity: Activity) {
-        if (dialogShowing || activity.isFinishing) return
+    // ---- wizard -------------------------------------------------------------------------------------------------
+
+    /**
+     * Called from MainActivity.onResume (also when the user comes back from a settings screen): shows the first
+     * step that is still missing and was not asked yet in this app version. Returns the step shown, if any.
+     */
+    fun maybePrompt(activity: Activity): Step? {
+        if (dialogShowing || activity.isFinishing) return null
         val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val version = versionCode(activity)
-        if (!canUseFullScreenIntent(activity)) {
-            if (prefs.getLong(KEY_FSI_ASKED_VERSION, -1) != version || prefs.getBoolean(KEY_FSI_REMIND, false)) {
-                prefs.edit().putLong(KEY_FSI_ASKED_VERSION, version).putBoolean(KEY_FSI_REMIND, false).apply()
-                show(
-                    activity,
-                    title = if (sk()) "Hovory na celú obrazovku" else "Full-screen calls",
-                    message = if (sk()) {
-                        "Aby sa pri prichádzajúcom hovore rozsvietil displej a aj na zamknutom telefóne sa ukázalo, kto volá, " +
-                            "s tlačidlami Prijať a Odmietnuť, zapnite pre psst „Upozornenia na celú obrazovku“."
-                    } else {
-                        "To light up the screen and show who is calling with Accept and Decline even on a locked phone, " +
-                            "allow psst to use full-screen notifications."
-                    },
-                    intent = fullScreenIntentSettings(activity),
-                )
-                return
-            }
-        } else {
-            prefs.edit().putBoolean(KEY_FSI_NOTIFIED, false).apply()
+        if (canUseFullScreenIntent(activity)) prefs.edit().putBoolean(KEY_FSI_NOTIFIED, false).apply()
+        for (step in Step.entries) {
+            if (isReady(activity, step)) continue
+            val remind = step == Step.FULL_SCREEN && prefs.getBoolean(KEY_FSI_REMIND, false)
+            if (prefs.getLong(askedKey(step), -1) == version && !remind) continue
+            prefs.edit().putLong(askedKey(step), version).apply()
+            if (step == Step.FULL_SCREEN) prefs.edit().putBoolean(KEY_FSI_REMIND, false).apply()
+            Timber.i("PSST setup wizard: step %s", step)
+            show(activity, step)
+            return step
         }
-        if (!isIgnoringBatteryOptimizations(activity) && prefs.getLong(KEY_BATTERY_ASKED_VERSION, -1) != version) {
-            prefs.edit().putLong(KEY_BATTERY_ASKED_VERSION, version).apply()
-            show(
-                activity,
-                title = if (sk()) "Spoľahlivé hovory a správy" else "Reliable calls and messages",
-                message = if (sk()) {
-                    "Aby telefón psst neuspal a hovory aj správy prichádzali hneď, povoľte psst bežať bez obmedzenia batérie."
-                } else {
-                    "So that the phone does not put psst to sleep and calls and messages arrive immediately, allow psst to run without battery restrictions."
-                },
-                intent = batterySettings(activity),
-                fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-            )
-        }
+        return null
     }
 
-    private fun show(activity: Activity, title: String, message: String, intent: Intent, fallback: Intent? = null) {
+    private fun show(activity: Activity, step: Step) {
+        val (title, message) = texts(step)
+        val intent = when (step) {
+            Step.NOTIFICATIONS -> messageChannelSettings(activity)
+            Step.LOCK_SCREEN -> messageChannelSettings(activity)
+            Step.FULL_SCREEN -> fullScreenIntentSettingsInTask(activity)
+            Step.BATTERY -> batterySettings(activity)
+        }
+        val fallback = when (step) {
+            Step.BATTERY -> Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+            else -> appNotificationSettings(activity)
+        }
+        var openedSettings = false
         dialogShowing = true
         AlertDialog.Builder(activity)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(if (sk()) "Otvoriť nastavenia" else "Open settings") { _, _ ->
-                runCatching { activity.startActivity(intent) }
-                    .recoverCatching { fallback?.let { activity.startActivity(it) } ?: throw it }
+                openedSettings = runCatching { activity.startActivity(intent) }
+                    .recoverCatching { activity.startActivity(fallback) }
+                    .onFailure { Timber.w(it, "PSST setup wizard: cannot open settings for %s", step) }
+                    .isSuccess
             }
             .setNegativeButton(if (sk()) "Neskôr" else "Later", null)
-            .setOnDismissListener { dialogShowing = false }
+            .setOnDismissListener {
+                dialogShowing = false
+                // "Later" (or settings could not be opened): continue with the next step right away.
+                // After "Open settings" the next step comes in onResume, when the user returns to psst.
+                if (!openedSettings && !activity.isFinishing) maybePrompt(activity)
+            }
             .show()
+    }
+
+    private fun texts(step: Step): Pair<String, String> = if (sk()) {
+        when (step) {
+            Step.NOTIFICATIONS -> "Upozornenia na správy" to
+                "Aby sa nová správa ukázala aj ako vyskakovacie okno navrchu obrazovky, povoľte psst upozornenia " +
+                "a pre „Správy“ zapnite „Vyskakovacie okno“ (pop-up). Potom sa vráťte späť."
+            Step.LOCK_SCREEN -> "Správy na zamknutej obrazovke" to
+                "Upozornenia psst sú skryté na zamknutej obrazovke. V nastaveniach kanála „Správy“ zapnite zobrazovanie " +
+                "na zamknutej obrazovke (a v nastaveniach telefónu Zamknutá obrazovka → Upozornenia). Potom sa vráťte späť."
+            Step.FULL_SCREEN -> "Hovory na celú obrazovku" to
+                "Aby sa pri prichádzajúcom hovore rozsvietil displej a aj na zamknutom telefóne sa ukázalo, kto volá, " +
+                "s tlačidlami Prijať a Odmietnuť, zapnite pre psst „Upozornenia na celú obrazovku“. Potom sa vráťte späť."
+            Step.BATTERY -> "Spoľahlivé hovory a správy" to
+                "Aby telefón psst neuspal a hovory aj správy prichádzali hneď, povoľte psst bežať bez obmedzenia batérie."
+        }
+    } else {
+        when (step) {
+            Step.NOTIFICATIONS -> "Message notifications" to
+                "So that new messages also pop up at the top of the screen, allow notifications for psst and turn on " +
+                "\"Pop up\" for \"Messages\". Then come back."
+            Step.LOCK_SCREEN -> "Messages on the lock screen" to
+                "psst notifications are hidden on the lock screen. In the \"Messages\" channel settings allow showing them " +
+                "on the lock screen (and in the phone's Lock screen → Notifications settings). Then come back."
+            Step.FULL_SCREEN -> "Full-screen calls" to
+                "To light up the screen and show who is calling with Accept and Decline even on a locked phone, " +
+                "allow psst to use full-screen notifications. Then come back."
+            Step.BATTERY -> "Reliable calls and messages" to
+                "So that the phone does not put psst to sleep and calls and messages arrive immediately, " +
+                "allow psst to run without battery restrictions."
+        }
     }
 
     /** Called when a ringing call is shown: if it could not go full screen, remind the user (once until fixed). */
