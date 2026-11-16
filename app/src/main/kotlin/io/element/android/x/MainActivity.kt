@@ -171,8 +171,11 @@ class MainActivity : NodeActivity() {
     override fun onResume() {
         super.onResume()
         Timber.tag(loggerTag.value).d("onResume")
-        // PSST (D57): full-screen calls + battery optimisation, on first start / after update / after a missed call
-        io.element.android.features.call.impl.psst.PsstCallReadiness.maybePrompt(this)
+        // PSST (D57, D61): setup wizard (notifications, lock screen, full-screen calls, battery); when nothing is
+        // missing, D63: check app.macet.eu/download for a newer APK (at most every 12 h)
+        if (io.element.android.features.call.impl.psst.PsstCallReadiness.maybePrompt(this) == null) {
+            io.element.android.features.call.impl.psst.PsstUpdateCheck.maybeCheck(this)
+        }
     }
 
     override fun onDestroy() {
