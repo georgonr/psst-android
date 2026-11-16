@@ -30,9 +30,11 @@ object PsstScreenWake {
     fun permissionGranted(context: Context): Boolean? {
         if (Build.VERSION.SDK_INT < 34) return null
         val ops = context.getSystemService(AppOpsManager::class.java) ?: return null
-        return runCatching {
-            ops.unsafeCheckOpNoThrow(OP_TURN_SCREEN_ON, Process.myUid(), context.packageName) == AppOpsManager.MODE_ALLOWED
-        }.getOrNull()
+        val permission = context.checkSelfPermission("android.permission.TURN_SCREEN_ON") == android.content.pm.PackageManager.PERMISSION_GRANTED
+        val mode = runCatching { ops.unsafeCheckOpNoThrow(OP_TURN_SCREEN_ON, Process.myUid(), context.packageName) }.getOrNull()
+            ?: return permission
+        // MODE_DEFAULT = decided by the (install-time) permission — the case on Android 14 (verified: the screen wakes)
+        return mode == AppOpsManager.MODE_ALLOWED || (mode == AppOpsManager.MODE_DEFAULT && permission)
     }
 
     /** Default: on when the permission is granted (or not needed). */
@@ -48,8 +50,13 @@ object PsstScreenWake {
     /** Effective state shown by the toggle: user wants it AND the system allows it. */
     fun isActive(context: Context): Boolean = isEnabled(context) && permissionGranted(context) != false
 
+    /** Per-app page only on Android 15+: on Android 14 (AOSP emulator) that page crashes Settings → use the list. */
     fun permissionSettingsIntent(context: Context): Intent =
-        Intent("android.settings.TURN_SCREEN_ON_SETTINGS", "package:${context.packageName}".toUri())
+        if (Build.VERSION.SDK_INT >= 35) {
+            Intent("android.settings.TURN_SCREEN_ON_SETTINGS", "package:${context.packageName}".toUri())
+        } else {
+            permissionListIntent()
+        }
 
     fun permissionListIntent(): Intent = Intent("android.settings.TURN_SCREEN_ON_SETTINGS")
 
