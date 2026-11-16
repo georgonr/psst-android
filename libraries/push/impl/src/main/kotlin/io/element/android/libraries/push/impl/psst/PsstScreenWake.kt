@@ -2,7 +2,7 @@
  * PSST (D73): "Rozsvietiť obrazovku pri novej správe" — briefly turns the display on when a message notification
  * alerts while the screen is off (Samsung One UI does not wake the screen for app notifications by itself).
  *
- * Mechanism: a 3-second SCREEN_BRIGHT wake lock with ACQUIRE_CAUSES_WAKEUP. Android 14+ gates this behind the
+ * Mechanism: a 3-second SCREEN_BRIGHT wake lock with ACQUIRE_CAUSES_WAKEUP. Android 15+ gates this behind the
  * special app access "Turn screen on" (permission android.permission.TURN_SCREEN_ON, normal|appop; settings page
  * android.settings.TURN_SCREEN_ON_SETTINGS). Without it the wake lock is acquired but the screen stays off.
  * Respects Do Not Disturb (only when the interruption filter is "all") and only for alerting message notifications.
@@ -28,7 +28,9 @@ object PsstScreenWake {
 
     /** null = the system has no such permission (older Android): waking works without it. */
     fun permissionGranted(context: Context): Boolean? {
-        if (Build.VERSION.SDK_INT < 34) return null
+        // Android ≤ 14: TURN_SCREEN_ON is signature|privileged (apps can't hold it) and not enforced — verified on
+        // API 34: the wake lock turns the screen on. Android 15+ makes it a user-grantable special app access.
+        if (Build.VERSION.SDK_INT < 35) return null
         val ops = context.getSystemService(AppOpsManager::class.java) ?: return null
         val permission = context.checkSelfPermission("android.permission.TURN_SCREEN_ON") == android.content.pm.PackageManager.PERMISSION_GRANTED
         val mode = runCatching { ops.unsafeCheckOpNoThrow(OP_TURN_SCREEN_ON, Process.myUid(), context.packageName) }.getOrNull()
