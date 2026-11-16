@@ -95,6 +95,10 @@
 
                 <data android:scheme="https" />
                 <data android:host="app.macet.eu" />
+                <!-- PSST (D63): only web-client permalinks (path "/" + fragment #/room/…, #/user/…). Other pages on
+                     app.macet.eu (/download/, /terms.html, /privacy.html, /admin) must open in the browser — otherwise
+                     the in-app update offer "Download" opened psst itself. -->
+                <data android:path="/" />
             </intent-filter>
             <!--
               matrix: links
