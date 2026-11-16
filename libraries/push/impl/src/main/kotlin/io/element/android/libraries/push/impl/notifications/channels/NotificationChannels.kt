@@ -45,7 +45,7 @@ import timber.log.Timber
  * ========================================================================================== */
 internal const val SILENT_NOTIFICATION_CHANNEL_ID = "DEFAULT_SILENT_NOTIFICATION_CHANNEL_ID_V2"
 // PSST: new id → Android forgets remembered channel settings; the channel is recreated with IMPORTANCE_HIGH (pop-up),
-// lock screen visibility PRIVATE and the "Messages" name (D53, D61). Older ids are deleted below.
+// the "Messages" name (D53, D61). Older ids are deleted below.
 internal const val NOISY_NOTIFICATION_CHANNEL_ID_BASE = "PSST_MESSAGES_V4"
 private val LEGACY_NOISY_NOTIFICATION_CHANNEL_ID_BASES = listOf(
     "DEFAULT_NOISY_NOTIFICATION_CHANNEL_ID_V2",
@@ -223,10 +223,9 @@ class DefaultNotificationChannels(
     }
 
     /**
-     * PSST: message channel built as a platform channel, because NotificationChannelCompat cannot set the lock screen
-     * visibility, and Android accepts it only when the channel is created (user changes win afterwards).
-     * IMPORTANCE_HIGH (upstream DEFAULT): messages pop up on screen, not only in the shade. VISIBILITY_PRIVATE: shown on
-     * the lock screen; content hidden only if the user chose "hide sensitive content".
+     * PSST: message channel (D61). IMPORTANCE_HIGH (upstream DEFAULT): messages pop up on screen, not only in the shade.
+     * Lock screen: Android replaces an app-set lockscreenVisibility with the system default ("no override" → the
+     * phone's lock screen setting decides); the setup wizard (PsstCallReadiness) checks it and sends the user there.
      */
     @android.annotation.SuppressLint("NewApi")
     private fun buildNoisyChannel(channelId: String, soundUri: Uri?, accentColor: Int): android.app.NotificationChannel {
@@ -240,7 +239,6 @@ class DefaultNotificationChannels(
             enableVibration(true)
             enableLights(true)
             lightColor = accentColor
-            lockscreenVisibility = android.app.Notification.VISIBILITY_PRIVATE
             setSound(
                 soundUri,
                 soundUri?.let {

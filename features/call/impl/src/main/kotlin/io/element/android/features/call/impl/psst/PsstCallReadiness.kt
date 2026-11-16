@@ -154,7 +154,13 @@ object PsstCallReadiness {
         val (title, message) = texts(step)
         val intent = when (step) {
             Step.NOTIFICATIONS -> messageChannelSettings(activity)
-            Step.LOCK_SCREEN -> messageChannelSettings(activity)
+            Step.LOCK_SCREEN -> if (messageChannel(activity)?.lockscreenVisibility == Notification.VISIBILITY_SECRET) {
+                messageChannelSettings(activity)
+            } else {
+                // the phone-wide "notifications on lock screen" switch lives on the system Notifications page
+                // (AOSP/Pixel and Samsung One UI); the action is not public API → fallback below
+                Intent("android.settings.NOTIFICATION_SETTINGS")
+            }
             Step.FULL_SCREEN -> fullScreenIntentSettingsInTask(activity)
             Step.BATTERY -> batterySettings(activity)
         }
@@ -189,8 +195,8 @@ object PsstCallReadiness {
                 "Aby sa nová správa ukázala aj ako vyskakovacie okno navrchu obrazovky, povoľte psst upozornenia " +
                 "a pre „Správy“ zapnite „Vyskakovacie okno“ (pop-up). Potom sa vráťte späť."
             Step.LOCK_SCREEN -> "Správy na zamknutej obrazovke" to
-                "Upozornenia psst sú skryté na zamknutej obrazovke. V nastaveniach kanála „Správy“ zapnite zobrazovanie " +
-                "na zamknutej obrazovke (a v nastaveniach telefónu Zamknutá obrazovka → Upozornenia). Potom sa vráťte späť."
+                "Upozornenia sú na zamknutej obrazovke vypnuté. Zapnite „Upozornenia na zamknutej obrazovke“ " +
+                "(Samsung: Upozornenia → Upozornenia na zamknutej obrazovke). Potom sa vráťte späť."
             Step.FULL_SCREEN -> "Hovory na celú obrazovku" to
                 "Aby sa pri prichádzajúcom hovore rozsvietil displej a aj na zamknutom telefóne sa ukázalo, kto volá, " +
                 "s tlačidlami Prijať a Odmietnuť, zapnite pre psst „Upozornenia na celú obrazovku“. Potom sa vráťte späť."
@@ -203,8 +209,8 @@ object PsstCallReadiness {
                 "So that new messages also pop up at the top of the screen, allow notifications for psst and turn on " +
                 "\"Pop up\" for \"Messages\". Then come back."
             Step.LOCK_SCREEN -> "Messages on the lock screen" to
-                "psst notifications are hidden on the lock screen. In the \"Messages\" channel settings allow showing them " +
-                "on the lock screen (and in the phone's Lock screen → Notifications settings). Then come back."
+                "Notifications are switched off on the lock screen. Turn on \"Notifications on lock screen\" " +
+                "(Samsung: Notifications → Lock screen notifications). Then come back."
             Step.FULL_SCREEN -> "Full-screen calls" to
                 "To light up the screen and show who is calling with Accept and Decline even on a locked phone, " +
                 "allow psst to use full-screen notifications. Then come back."
