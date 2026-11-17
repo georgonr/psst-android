@@ -13,6 +13,10 @@ import androidx.compose.ui.text.buildAnnotatedString
 import java.text.Normalizer
 
 object PsstSearchHighlight {
+    /** The "Sender: " prefixes a formatted latest-event line may start with (the name may be in Unicode isolates). */
+    fun senderPrefixes(senderName: String, you: String): List<String> =
+        listOf("\u2068$senderName\u2069: ", "$senderName: ", "$you: ")
+
     /** Characters kept before the first match when the snippet has to be shortened. */
     private const val CONTEXT_BEFORE = 28
 
@@ -48,22 +52,22 @@ object PsstSearchHighlight {
     }
 
     /**
-     * [text] (optionally after a [prefix] such as "Sender: " that is never cut) with the matches of [query] in
+     * [text] (optionally after one of [prefixes] such as "Sender: " that is never cut) with the matches of [query] in
      * [highlight] style, shortened at the start when the first match is far in.
      */
-    fun snippet(text: String, query: String, highlight: SpanStyle, prefix: String = ""): AnnotatedString {
-        val body = if (prefix.isNotEmpty() && text.startsWith(prefix)) text.substring(prefix.length) else text
-        val shownPrefix = if (prefix.isNotEmpty() && text.startsWith(prefix)) prefix else ""
+    fun snippet(text: String, query: String, highlight: SpanStyle, prefixes: List<String> = emptyList()): AnnotatedString {
+        val shownPrefix = prefixes.firstOrNull { it.isNotEmpty() && text.startsWith(it) }.orEmpty()
+        val body = text.substring(shownPrefix.length)
         val ranges = matches(body, queryWords(query))
         var start = 0
         val first = ranges.firstOrNull()?.first ?: 0
-        if (first > CONTEXT_BEFORE + 10) {
+        if (first > CONTEXT_BEFORE + 20) {
             start = first - CONTEXT_BEFORE
             // do not start in the middle of a word
             while (start < first && body[start].isLetterOrDigit() && body[start - 1].isLetterOrDigit()) start++
         }
         return buildAnnotatedString {
-            append(shownPrefix)
+            append(shownPrefix.replace("\u2068", "").replace("\u2069", ""))
             if (start > 0) append("…")
             var pos = start
             for (r in ranges) {

@@ -30,7 +30,9 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import timber.log.Timber
 import java.text.DateFormat
 import java.util.Date
@@ -52,22 +54,37 @@ class PsstRoomSearchPresenter(
         val pagination by search.paginationState.collectAsState()
         val indexing by psstSearchIndexing.isIndexing.collectAsState()
         var searchedQuery by remember { mutableStateOf("") }
-        var wanted by remember { mutableIntStateOf(PAGE) }
+        var loadMoreTick by remember { mutableIntStateOf(0) }
+        var filling by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { psstSearchIndexing.observe() }
 
+        // One coroutine owns the cursor: a new query (or "load more") cancels the previous fill. The SDK ranks all
+        // rooms together, so page on until this room has PAGE more results or the index has no more.
         LaunchedEffect(Unit) {
-            snapshotFlow { queryState.text.toString().trim() }.distinctUntilChanged().collectLatest { q ->
-                delay(250.milliseconds)
-                wanted = PAGE
-                searchedQuery = q
-                search.setQuery(q).onFailure { Timber.w(it, "PSST: room search failed") }
-            }
-        }
-        // The SDK ranks all rooms together: page on until this room has `wanted` results or the index is exhausted.
-        LaunchedEffect(results.size, pagination, wanted, searchedQuery) {
-            val p = pagination
-            if (searchedQuery.isNotEmpty() && results.size < wanted && p is MessageSearchPaginationState.Idle && !p.endReached) {
-                search.paginate()
+            snapshotFlow { queryState.text.toString().trim() to loadMoreTick }.distinctUntilChanged().collectLatest { (q, _) ->
+                val target = if (q != searchedQuery || q.isEmpty()) {
+                    delay(250.milliseconds)
+                    search.setQuery(q).onFailure { Timber.w(it, "PSST: room search failed") }
+                    searchedQuery = q
+                    PAGE
+                } else {
+                    search.results.value.size + PAGE
+                }
+                if (q.isEmpty()) return@collectLatest
+                filling = true
+                try {
+                    var guard = 0
+                    while (search.results.value.size < target && guard++ < MAX_PAGES) {
+                        // the pagination state arrives through a listener: wait until the SDK is idle again
+                        val idle = withTimeoutOrNull(5_000) {
+                            search.paginationState.first { it is MessageSearchPaginationState.Idle } as MessageSearchPaginationState.Idle
+                        } ?: break
+                        if (idle.endReached) break
+                        search.paginate().onFailure { Timber.w(it, "PSST: room search paging failed") }
+                    }
+                } finally {
+                    filling = false
+                }
             }
         }
 
@@ -87,12 +104,11 @@ class PsstRoomSearchPresenter(
                 )
             }.toImmutableList()
         }
-        val loading = searchedQuery.isNotEmpty() &&
-            (pagination is MessageSearchPaginationState.Loading || (results.size < wanted && (pagination as? MessageSearchPaginationState.Idle)?.endReached == false))
+        val loading = searchedQuery.isNotEmpty() && (filling || pagination is MessageSearchPaginationState.Loading)
 
         fun handle(event: PsstRoomSearchEvent) {
             when (event) {
-                PsstRoomSearchEvent.LoadMore -> if (!loading) wanted = results.size + PAGE
+                PsstRoomSearchEvent.LoadMore -> if (!loading) loadMoreTick++
                 PsstRoomSearchEvent.Clear -> scope.launch { queryState.edit { replace(0, length, "") } }
             }
         }
@@ -111,5 +127,8 @@ class PsstRoomSearchPresenter(
 
     private companion object {
         const val PAGE = 20
+
+        /** Upper bound of global pages fetched for one fill (20 results each). */
+        const val MAX_PAGES = 100
     }
 }

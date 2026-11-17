@@ -3,6 +3,8 @@
  */
 package io.element.android.libraries.matrix.impl.search.psst
 
+import io.element.android.libraries.di.annotations.ApplicationContext
+import android.content.Context
 import android.util.Log
 import android.os.SystemClock
 import android.os.Process
@@ -24,18 +26,26 @@ import kotlin.time.Duration.Companion.seconds
 @ContributesBinding(SessionScope::class)
 class DefaultPsstSearchIndexing(
     private val matrixClient: MatrixClient,
+    @ApplicationContext private val context: Context,
 ) : PsstSearchIndexing {
     private val service get() = matrixClient.searchBackfillService
     private val indexing = MutableStateFlow(false)
     override val isIndexing: StateFlow<Boolean> = indexing.asStateFlow()
 
-    /** Elapsed-realtime of the last complete sweep in this process; a sweep re-checks every room, so not too often. */
-    private var lastCompletedAt = 0L
+    /**
+     * Wall-clock time of the last complete sweep of this session, kept across restarts: a sweep re-reads the stored
+     * history of every room (measured: ~1 min of CPU for ~1000 messages on the emulator), while new messages are
+     * indexed as they arrive anyway. So at most once per [RERUN_AFTER].
+     */
+    private val prefs get() = context.getSharedPreferences("psst_search_indexing", Context.MODE_PRIVATE)
+    // per device: a new login (new device, new index) must index its history again
+    private val lastCompletedKey get() = "last_completed_${matrixClient.sessionId.value}_${matrixClient.deviceId.value}"
 
     override suspend fun runWhileVisible() {
         if (!matrixClient.isMessageSearchAvailable) return
         // Let the first sync and the room list settle before adding (low priority) back-paginations.
         delay(START_DELAY)
+        val lastCompletedAt = prefs.getLong(lastCompletedKey, 0L)
         if (lastCompletedAt != 0L && System.currentTimeMillis() - lastCompletedAt < RERUN_AFTER.inWholeMilliseconds) return
         val task = if (service.isSearchBackfillRunning()) {
             null
@@ -54,7 +64,7 @@ class DefaultPsstSearchIndexing(
                 delay(POLL)
             }
             if (task != null) {
-                lastCompletedAt = System.currentTimeMillis()
+                prefs.edit().putLong(lastCompletedKey, System.currentTimeMillis()).apply()
                 Timber.i("PSST: search backfill finished")
             }
             Log.i(
@@ -79,6 +89,6 @@ class DefaultPsstSearchIndexing(
     private companion object {
         val START_DELAY = 8.seconds
         val POLL = 2.seconds
-        val RERUN_AFTER = 6.hours
+        val RERUN_AFTER = 24.hours
     }
 }

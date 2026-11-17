@@ -749,8 +749,9 @@ private fun TextMessageSearchResultItemView(
             }
             // PSST (D80): snippet around the first match, searched words highlighted
             val highlight = SpanStyle(color = ElementTheme.colors.textActionAccent, fontWeight = FontWeight.Bold)
+            val you = stringResource(CommonStrings.common_you)
             Text(
-                text = remember(body, query) { PsstSearchHighlight.snippet(body, query, highlight, prefix = "$senderName: ") },
+                text = remember(body, query) { PsstSearchHighlight.snippet(body, query, highlight, PsstSearchHighlight.senderPrefixes(senderName, you)) },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = ElementTheme.typography.fontBodyMdRegular,
