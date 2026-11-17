@@ -7,6 +7,8 @@
 
 package io.element.android.libraries.matrix.impl.search
 
+import android.util.Log
+import android.os.SystemClock
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.core.RoomId
 import io.element.android.libraries.matrix.api.search.MessageSearch
@@ -115,13 +117,18 @@ class RustMessageSearch(
             // syntax rather than text — a pasted URL fails the whole search. Escape so the query is
             // searched literally. The caller keeps the raw string; only the SDK sees the escaped one.
             // PSST (D80): words only, each required and matched as a prefix by the psst SDK build.
+            val started = SystemClock.elapsedRealtime()
             inner.setQuery(query.toPsstSearchQuery())
+            // timing only, never the query or the results (PII)
+            Log.i("PsstSearch", "first page in ${SystemClock.elapsedRealtime() - started} ms (${query.length} chars)")
         }
     }
 
     override suspend fun paginate(): Result<Unit> = withContext(dispatcher) {
         runCatchingExceptions {
+            val started = SystemClock.elapsedRealtime()
             inner.paginate()
+            Log.i("PsstSearch", "next page in ${SystemClock.elapsedRealtime() - started} ms")
         }
     }
 

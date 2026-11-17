@@ -3,6 +3,9 @@
  */
 package io.element.android.libraries.matrix.impl.search.psst
 
+import android.util.Log
+import android.os.SystemClock
+import android.os.Process
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
 import io.element.android.libraries.di.SessionScope
@@ -41,8 +44,11 @@ class DefaultPsstSearchIndexing(
                 .onFailure { Timber.w(it, "PSST: search backfill not started") }
                 .getOrNull()
         }
+        val started = SystemClock.elapsedRealtime()
+        val cpuStart = Process.getElapsedCpuTime()
         try {
             Timber.i("PSST: search backfill running (history indexing)")
+            Log.i("PsstSearch", "history indexing started (own run: ${task != null})")
             while (service.isSearchBackfillRunning()) {
                 indexing.value = true
                 delay(POLL)
@@ -51,6 +57,11 @@ class DefaultPsstSearchIndexing(
                 lastCompletedAt = System.currentTimeMillis()
                 Timber.i("PSST: search backfill finished")
             }
+            Log.i(
+                "PsstSearch",
+                "history indexing finished in ${SystemClock.elapsedRealtime() - started} ms, " +
+                    "app CPU ${Process.getElapsedCpuTime() - cpuStart} ms",
+            )
         } finally {
             // Leaving the screen: stop our run (the periodic background job continues on a charger).
             task?.close()
