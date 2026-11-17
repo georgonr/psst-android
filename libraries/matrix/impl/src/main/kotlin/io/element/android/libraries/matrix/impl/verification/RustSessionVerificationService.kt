@@ -8,6 +8,14 @@
 
 package io.element.android.libraries.matrix.impl.verification
 
+import org.matrix.rustcomponents.sdk.QrVerificationProgress
+import org.matrix.rustcomponents.sdk.QrVerificationDelegate
+import org.matrix.rustcomponents.sdk.QrScanResult
+import io.element.android.libraries.matrix.api.verification.psst.PsstQrVerification
+import io.element.android.libraries.matrix.api.verification.psst.PsstQrScanResult
+import io.element.android.libraries.matrix.api.verification.psst.PsstQrProgress
+import io.element.android.libraries.matrix.api.verification.psst.PsstQrOptions
+import io.element.android.libraries.matrix.api.verification.psst.PsstCancelInfo
 import io.element.android.libraries.core.data.tryOrNull
 import io.element.android.libraries.core.extensions.runCatchingExceptions
 import io.element.android.libraries.matrix.api.core.UserId
@@ -55,7 +63,7 @@ class RustSessionVerificationService(
     isSyncServiceReady: Flow<Boolean>,
     private val sessionCoroutineScope: CoroutineScope,
     private val sessionDispatcher: CoroutineDispatcher,
-) : SessionVerificationService, SessionVerificationControllerDelegate {
+) : SessionVerificationService, SessionVerificationControllerDelegate, PsstQrVerification, QrVerificationDelegate {
     private var currentVerificationRequest: VerificationRequest? = null
 
     private val encryptionService: Encryption = client.encryption()
@@ -68,6 +76,10 @@ class RustSessionVerificationService(
     override val sessionVerifiedStatus: StateFlow<SessionVerifiedStatus> = _sessionVerifiedStatus.asStateFlow()
 
     private val recoveryState = MutableStateFlow(RecoveryState.UNKNOWN)
+
+    // PSST (D81): QR code verification
+    private val _psstQrProgress = MutableStateFlow<PsstQrProgress>(PsstQrProgress.None)
+    override val psstQrProgress: StateFlow<PsstQrProgress> = _psstQrProgress.asStateFlow()
 
     private val isInitialized = AtomicBoolean(false)
 
@@ -128,6 +140,7 @@ class RustSessionVerificationService(
 
     override suspend fun requestDeviceVerification() = tryOrFail {
         ensureEncryptionIsInitialized()
+        _psstQrProgress.value = PsstQrProgress.None
         verificationController.requestDeviceVerification()
         currentVerificationRequest = VerificationRequest.Outgoing.CurrentSession
     }
@@ -154,6 +167,7 @@ class RustSessionVerificationService(
 
     override suspend fun acknowledgeVerificationRequest(verificationRequest: VerificationRequest.Incoming) = tryOrFail {
         ensureEncryptionIsInitialized()
+        _psstQrProgress.value = PsstQrProgress.None
         verificationController.acknowledgeVerificationRequest(
             senderId = verificationRequest.details.senderProfile.userId.value,
             flowId = verificationRequest.details.flowId.value,
@@ -236,8 +250,54 @@ class RustSessionVerificationService(
 
     // end-region
 
+    // region PSST (D81): QR code verification
+
+    override suspend fun psstQrOptions(): PsstQrOptions = runCatchingExceptions {
+        withContext(sessionDispatcher) {
+            val options = verificationController.qrOptions()
+            PsstQrOptions(canShowQrCode = options.canShowQrCode, canScanQrCode = options.canScanQrCode)
+        }
+    }.getOrElse { PsstQrOptions(canShowQrCode = false, canScanQrCode = false) }
+
+    override suspend fun psstGenerateQrCode(): ByteArray? = runCatchingExceptions {
+        withContext(sessionDispatcher) { verificationController.generateQrCode() }
+    }.onFailure { Timber.w(it, "PSST: cannot generate the verification QR code") }.getOrNull()
+
+    override suspend fun psstScanQrCode(data: ByteArray): PsstQrScanResult = runCatchingExceptions {
+        withContext(NonCancellable + sessionDispatcher) {
+            when (verificationController.scanQrCode(data)) {
+                QrScanResult.STARTED -> PsstQrScanResult.Started
+                QrScanResult.INVALID_CODE -> PsstQrScanResult.InvalidCode
+                QrScanResult.KEY_MISMATCH -> PsstQrScanResult.KeyMismatch
+                QrScanResult.NOT_APPLICABLE -> PsstQrScanResult.NotApplicable
+            }
+        }
+    }.onFailure { Timber.w(it, "PSST: scanning the verification QR code failed") }.getOrElse { PsstQrScanResult.Failed }
+
+    override suspend fun psstConfirmQrScanned() = tryOrFail { verificationController.confirmQrScanned() }
+
+    override fun psstLastCancelCode(): PsstCancelInfo? = runCatchingExceptions {
+        (verificationController.requestCancelInfo() ?: verificationController.sasCancelInfo())
+            ?.let { PsstCancelInfo(code = it.cancelCode, cancelledByUs = it.cancelledByUs) }
+    }.getOrNull()
+
+    override fun didChangeQrProgress(progress: QrVerificationProgress) {
+        _psstQrProgress.value = when (progress) {
+            QrVerificationProgress.Scanned -> PsstQrProgress.Scanned
+            QrVerificationProgress.Reciprocated -> PsstQrProgress.Reciprocated
+            QrVerificationProgress.Confirmed -> PsstQrProgress.Confirmed
+            QrVerificationProgress.Done -> PsstQrProgress.Done
+            is QrVerificationProgress.Cancelled -> PsstQrProgress.Cancelled(
+                PsstCancelInfo(code = progress.cancelInfo.cancelCode, cancelledByUs = progress.cancelInfo.cancelledByUs)
+            )
+        }
+    }
+
+    // end-region
+
     override suspend fun reset(cancelAnyPendingVerificationAttempt: Boolean) {
         currentVerificationRequest = null
+        _psstQrProgress.value = PsstQrProgress.None
         if (canVerify.value && cancelAnyPendingVerificationAttempt) {
             // Cancel any pending verification attempt
             tryOrNull { withContext(sessionDispatcher) { verificationController.cancelVerification() } }
@@ -252,6 +312,7 @@ class RustSessionVerificationService(
         recoveryStateListenerTaskHandle.cancelAndDestroy()
         if (this::verificationController.isInitialized) {
             verificationController.setDelegate(null)
+            verificationController.setQrDelegate(null)
         }
     }
 
@@ -277,6 +338,7 @@ class RustSessionVerificationService(
             if (!this::verificationController.isInitialized) {
                 verificationController = client.getSessionVerificationController()
                 verificationController.setDelegate(this)
+                verificationController.setQrDelegate(this)
             }
         }
     }

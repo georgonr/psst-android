@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D81): QR code device verification strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_qr_title">Overte zariadenie</string>
+    <string name="psst_qr_subtitle">Naskenujte QR kód zobrazený na druhom zariadení, nechajte ho naskenovať kód nižšie, alebo porovnajte emoji.</string>
+    <string name="psst_qr_show_hint">Naskenujte tento kód druhým zariadením.</string>
+    <string name="psst_qr_show_hint_both">Naskenujte tento kód druhým zariadením – alebo týmto naskenujte kód druhého zariadenia.</string>
+    <string name="psst_qr_code_description">QR kód na overenie</string>
+    <string name="psst_qr_scan">Naskenovať QR kód</string>
+    <string name="psst_qr_scan_again">Skenovať znova</string>
+    <string name="psst_qr_scan_hint">Namierte fotoaparát na QR kód zobrazený na druhom zariadení.</string>
+    <string name="psst_qr_scan_stop">Zastaviť skenovanie</string>
+    <string name="psst_qr_compare_emoji">Porovnať emoji</string>
+    <string name="psst_qr_scanned_question">Druhé zariadenie naskenovalo tento kód. Zobrazuje, že overenie sa podarilo?</string>
+    <string name="psst_qr_scanned_yes">Áno, zobrazuje</string>
+    <string name="psst_qr_scanned_no">Nie – zastaviť overenie</string>
+    <string name="psst_qr_reciprocated">Kód je naskenovaný. Potvrďte overenie na druhom zariadení.</string>
+    <string name="psst_qr_finishing">Dokončuje sa overenie…</string>
+    <string name="psst_qr_camera_denied">Bez prístupu ku kamere sa QR kód nedá naskenovať. Povoľte kameru v nastaveniach systému alebo namiesto toho porovnajte emoji.</string>
+    <string name="psst_qr_open_settings">Otvoriť nastavenia</string>
+    <string name="psst_qr_error_invalid">Toto nie je QR kód na overenie. Naskenujte kód, ktorý ukazuje overenie na druhom zariadení.</string>
+    <string name="psst_qr_error_mismatch">Tento QR kód patrí inému overeniu alebo zariadeniu – kľúče sa nezhodujú. Naskenujte kód tohto overenia alebo porovnajte emoji.</string>
+    <string name="psst_qr_error_not_active">Toto overenie už nie je aktívne. Začnite ho znova.</string>
+    <string name="psst_qr_error_failed">Skenovanie sa nepodarilo. Skúste znova alebo porovnajte emoji.</string>
+    <string name="psst_cancel_timeout">Čas na overenie vypršal. Začnite ho znova.</string>
+    <string name="psst_cancel_by_us">Overenie ste zrušili.</string>
+    <string name="psst_cancel_by_other">Druhé zariadenie overenie zrušilo.</string>
+    <string name="psst_cancel_mismatch">Kľúče sa nezhodujú, overenie sa zastavilo. Začnite ho znova; ak sa to zopakuje, druhé zariadenie nemusí byť vaše.</string>
+    <string name="psst_cancel_accepted_elsewhere">Na žiadosť odpovedalo iné z vašich zariadení.</string>
+    <string name="psst_cancel_unsupported">Druhé zariadenie zvolený spôsob nepodporuje. Začnite znova a porovnajte emoji.</string>
+    <string name="psst_cancel_other">Overenie sa nepodarilo. Začnite ho znova.</string>
+</resources>

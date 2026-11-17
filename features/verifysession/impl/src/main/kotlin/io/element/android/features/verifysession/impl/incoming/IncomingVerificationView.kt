@@ -8,6 +8,8 @@
 
 package io.element.android.features.verifysession.impl.incoming
 
+import io.element.android.features.verifysession.impl.psst.PsstVerificationCancelReason
+import io.element.android.features.verifysession.impl.psst.PsstQrVerificationSection
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -86,10 +88,21 @@ fun IncomingVerificationView(
         },
         isScrollable = true,
     ) {
-        IncomingVerificationContent(
-            step = step,
-            request = state.request,
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            IncomingVerificationContent(
+                step = step,
+                request = state.request,
+            )
+            // PSST (D81): QR code verification once accepted, and why a verification stopped
+            if (step is Step.Initial && step.isWaiting) {
+                PsstQrVerificationSection(
+                    ui = state.psstQr,
+                    onCompareEmoji = { state.eventSink(IncomingVerificationViewEvent.PsstCompareEmoji) },
+                    onCancel = { state.eventSink(IncomingVerificationViewEvent.GoBack) },
+                )
+            }
+            if (step is Step.Canceled || step is Step.Failure) PsstVerificationCancelReason(state.psstCancelInfo)
+        }
     }
 }
 
@@ -216,7 +229,16 @@ private fun IncomingVerificationBottomMenu(
 ) {
     val eventSink = state.eventSink
     when (val step = state.step) {
-        is Step.Initial -> {
+        is Step.Initial -> if (step.isWaiting && state.psstQr.available) {
+            // PSST (D81): the QR section offers QR / emoji; here only cancelling
+            VerificationBottomMenu {
+                TextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(CommonStrings.action_cancel),
+                    onClick = { eventSink(IncomingVerificationViewEvent.GoBack) },
+                )
+            }
+        } else {
             VerificationBottomMenu {
                 Button(
                     modifier = Modifier.fillMaxWidth(),

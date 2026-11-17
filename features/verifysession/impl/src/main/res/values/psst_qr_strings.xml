@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D81): QR code device verification strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_qr_title">Verify the device</string>
+    <string name="psst_qr_subtitle">Scan the QR code shown on the other device, let it scan the code below, or compare emoji.</string>
+    <string name="psst_qr_show_hint">Scan this code with the other device.</string>
+    <string name="psst_qr_show_hint_both">Scan this code with the other device – or scan the other device\'s code with this one.</string>
+    <string name="psst_qr_code_description">Verification QR code</string>
+    <string name="psst_qr_scan">Scan QR code</string>
+    <string name="psst_qr_scan_again">Scan again</string>
+    <string name="psst_qr_scan_hint">Point the camera at the QR code shown on the other device.</string>
+    <string name="psst_qr_scan_stop">Stop scanning</string>
+    <string name="psst_qr_compare_emoji">Compare emoji</string>
+    <string name="psst_qr_scanned_question">The other device scanned this code. Does it show that the verification succeeded?</string>
+    <string name="psst_qr_scanned_yes">Yes, it does</string>
+    <string name="psst_qr_scanned_no">No – stop the verification</string>
+    <string name="psst_qr_reciprocated">Code scanned. Confirm the verification on the other device.</string>
+    <string name="psst_qr_finishing">Finishing the verification…</string>
+    <string name="psst_qr_camera_denied">Without camera access the QR code cannot be scanned. Allow the camera in the system settings, or compare emoji instead.</string>
+    <string name="psst_qr_open_settings">Open settings</string>
+    <string name="psst_qr_error_invalid">This is not a verification QR code. Scan the code shown by the verification on the other device.</string>
+    <string name="psst_qr_error_mismatch">This QR code belongs to another verification or device – the keys do not match. Scan the code of this verification, or compare emoji.</string>
+    <string name="psst_qr_error_not_active">This verification is no longer active. Start it again.</string>
+    <string name="psst_qr_error_failed">Scanning failed. Try again or compare emoji.</string>
+    <string name="psst_cancel_timeout">The verification timed out. Start it again.</string>
+    <string name="psst_cancel_by_us">You cancelled the verification.</string>
+    <string name="psst_cancel_by_other">The other device cancelled the verification.</string>
+    <string name="psst_cancel_mismatch">The keys do not match, so the verification was stopped. Start it again; if it happens again, the other device may not be yours.</string>
+    <string name="psst_cancel_accepted_elsewhere">Another of your devices answered the request.</string>
+    <string name="psst_cancel_unsupported">The other device does not support the chosen method. Start again and compare emoji.</string>
+    <string name="psst_cancel_other">The verification did not succeed. Start it again.</string>
+</resources>

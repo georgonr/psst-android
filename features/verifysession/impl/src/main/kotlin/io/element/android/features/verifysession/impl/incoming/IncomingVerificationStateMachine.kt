@@ -10,6 +10,7 @@
 
 package io.element.android.features.verifysession.impl.incoming
 
+import io.element.android.features.verifysession.impl.psst.psstQrPossible
 import com.freeletics.flowredux.dsl.FlowReduxStateMachine
 import dev.zacsweers.metro.Inject
 import io.element.android.features.verifysession.impl.util.andLogStateChange
@@ -36,7 +37,14 @@ class IncomingVerificationStateMachine(
                 onEnterEffect {
                     sessionVerificationService.acceptVerificationRequest()
                     // Either side may start the SAS verification, the SDK resolves the conflict if both do.
-                    sessionVerificationService.startSasVerification()
+                    // PSST (D81): not when the other device supports QR codes — the user then chooses QR or emoji.
+                    if (!psstQrPossible(sessionVerificationService)) {
+                        sessionVerificationService.startSasVerification()
+                    }
+                }
+                // PSST (D81): a QR code verification finishes without the emoji steps
+                on<Event.DidAcceptChallenge> { _, state ->
+                    state.override { State.Completed.andLogStateChange() }
                 }
                 on { event: Event.DidReceiveChallenge, state ->
                     state.override { State.ChallengeReceived(event.data).andLogStateChange() }

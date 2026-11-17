@@ -14,4 +14,7 @@ sealed interface IncomingVerificationViewEvent {
     data object IgnoreVerification : IncomingVerificationViewEvent
     data object ConfirmVerification : IncomingVerificationViewEvent
     data object DeclineVerification : IncomingVerificationViewEvent
+
+    /** PSST (D81): compare emoji instead of a QR code. */
+    data object PsstCompareEmoji : IncomingVerificationViewEvent
 }

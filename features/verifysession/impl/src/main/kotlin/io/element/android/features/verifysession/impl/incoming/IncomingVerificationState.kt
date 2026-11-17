@@ -8,6 +8,8 @@
 
 package io.element.android.features.verifysession.impl.incoming
 
+import io.element.android.libraries.matrix.api.verification.psst.PsstCancelInfo
+import io.element.android.features.verifysession.impl.psst.PsstQrUi
 import androidx.compose.runtime.Stable
 import io.element.android.libraries.matrix.api.core.DeviceId
 import io.element.android.libraries.matrix.api.user.MatrixUser
@@ -18,6 +20,10 @@ data class IncomingVerificationState(
     val step: Step,
     val request: VerificationRequest.Incoming,
     val eventSink: (IncomingVerificationViewEvent) -> Unit,
+    /** PSST (D81): QR code verification. */
+    val psstQr: PsstQrUi = PsstQrUi.NONE,
+    /** PSST (D81): why the verification was cancelled. */
+    val psstCancelInfo: PsstCancelInfo? = null,
 ) {
     @Stable
     sealed interface Step {

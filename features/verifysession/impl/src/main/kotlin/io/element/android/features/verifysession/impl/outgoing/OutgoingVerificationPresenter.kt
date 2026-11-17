@@ -10,6 +10,8 @@
 
 package io.element.android.features.verifysession.impl.outgoing
 
+import io.element.android.features.verifysession.impl.psst.psstCancelInfo
+import io.element.android.features.verifysession.impl.psst.rememberPsstQrUi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -107,10 +109,17 @@ class OutgoingVerificationPresenter(
                 stateAndDispatch.dispatchAction(stateMachineEvent)
             }
         }
+        // PSST (D81): QR code verification once the other device accepted; reason of a cancellation
+        val psstQr = rememberPsstQrUi(sessionVerificationService, active = step is OutgoingVerificationState.Step.Ready)
+        val psstCancelInfo = remember(step) {
+            if (step is OutgoingVerificationState.Step.Canceled) psstCancelInfo(sessionVerificationService) else null
+        }
         return OutgoingVerificationState(
             step = step,
             request = verificationRequest,
             eventSink = ::handleEvent,
+            psstQr = psstQr,
+            psstCancelInfo = psstCancelInfo,
         )
     }
 

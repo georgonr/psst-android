@@ -8,6 +8,9 @@
 
 package io.element.android.features.verifysession.impl.outgoing
 
+import androidx.compose.foundation.layout.Column
+import io.element.android.features.verifysession.impl.psst.PsstVerificationCancelReason
+import io.element.android.features.verifysession.impl.psst.PsstQrVerificationSection
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
@@ -103,7 +106,7 @@ fun OutgoingVerificationView(
                 )
             },
             header = {
-                OutgoingVerificationHeader(step = step, request = state.request)
+                OutgoingVerificationHeader(step = step, request = state.request, psstQrAvailable = state.psstQr.available)
             },
             footer = {
                 OutgoingVerificationBottomMenu(
@@ -114,17 +117,28 @@ fun OutgoingVerificationView(
             },
             isScrollable = true,
         ) {
-            OutgoingVerificationContent(
-                step = step,
-                request = state.request,
-                onLearnMoreClick = onLearnMoreClick,
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutgoingVerificationContent(
+                    step = step,
+                    request = state.request,
+                    onLearnMoreClick = onLearnMoreClick,
+                )
+                // PSST (D81): QR code verification, and why a verification stopped
+                if (step is Step.Ready) {
+                    PsstQrVerificationSection(
+                        ui = state.psstQr,
+                        onCompareEmoji = null,
+                        onCancel = { state.eventSink(OutgoingVerificationViewEvent.Cancel) },
+                    )
+                }
+                if (step is Step.Canceled) PsstVerificationCancelReason(state.psstCancelInfo)
+            }
         }
     }
 }
 
 @Composable
-private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.Outgoing) {
+private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.Outgoing, psstQrAvailable: Boolean = false) {
     val iconStyle = when (step) {
         Step.Loading -> error("Should not happen")
         Step.AwaitingOtherDeviceResponse,
@@ -133,7 +147,7 @@ private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.
             is VerificationRequest.Outgoing.User -> BigIcon.Style.Default(CompoundIcons.UserProfileSolid())
         }
         Step.Canceled -> BigIcon.Style.AlertSolid
-        Step.Ready -> BigIcon.Style.Default(CompoundIcons.ReactionSolid())
+        Step.Ready -> BigIcon.Style.Default(if (psstQrAvailable) CompoundIcons.QrCode() else CompoundIcons.ReactionSolid())
         Step.Completed -> BigIcon.Style.SuccessSolid
         is Step.Verifying -> {
             BigIcon.Style.Default(CompoundIcons.ReactionSolid())
@@ -151,7 +165,7 @@ private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.
             is VerificationRequest.Outgoing.User -> R.string.screen_session_verification_waiting_other_user_title
         }
         Step.Canceled -> CommonStrings.common_verification_failed
-        Step.Ready -> R.string.screen_session_verification_compare_emojis_title
+        Step.Ready -> if (psstQrAvailable) R.string.psst_qr_title else R.string.screen_session_verification_compare_emojis_title
         Step.Completed -> when (request) {
             is VerificationRequest.Outgoing.CurrentSession -> R.string.screen_session_verification_device_verified
             is VerificationRequest.Outgoing.User -> CommonStrings.common_verification_complete
@@ -170,7 +184,7 @@ private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.
         }
         Step.AwaitingOtherDeviceResponse -> R.string.screen_session_verification_waiting_subtitle
         Step.Canceled -> R.string.screen_session_verification_failed_subtitle
-        Step.Ready -> R.string.screen_session_verification_ready_subtitle
+        Step.Ready -> if (psstQrAvailable) R.string.psst_qr_subtitle else R.string.screen_session_verification_ready_subtitle
         Step.Completed -> when (request) {
             is VerificationRequest.Outgoing.CurrentSession -> R.string.screen_identity_confirmed_subtitle
             is VerificationRequest.Outgoing.User -> R.string.screen_session_verification_complete_user_subtitle
@@ -276,11 +290,14 @@ private fun OutgoingVerificationBottomMenu(
         }
         is Step.Ready -> {
             VerificationBottomMenu {
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(CommonStrings.action_start),
-                    onClick = { eventSink(OutgoingVerificationViewEvent.StartSasVerification) },
-                )
+                // PSST (D81): with QR code verification the emoji comparison is the alternative; hidden while a QR flow runs
+                if (!state.psstQr.inProgress) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(if (state.psstQr.available) R.string.psst_qr_compare_emoji else CommonStrings.action_start),
+                        onClick = { eventSink(OutgoingVerificationViewEvent.StartSasVerification) },
+                    )
+                }
                 TextButton(
                     modifier = Modifier.fillMaxWidth(),
                     text = stringResource(CommonStrings.action_cancel),

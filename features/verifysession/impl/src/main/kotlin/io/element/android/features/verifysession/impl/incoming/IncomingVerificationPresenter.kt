@@ -10,6 +10,8 @@
 
 package io.element.android.features.verifysession.impl.incoming
 
+import io.element.android.features.verifysession.impl.psst.psstCancelInfo
+import io.element.android.features.verifysession.impl.psst.rememberPsstQrUi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -125,6 +127,8 @@ class IncomingVerificationPresenter(
         fun handleEvent(event: IncomingVerificationViewEvent) {
             Timber.d("Verification user action: ${event::class.simpleName}")
             when (event) {
+                IncomingVerificationViewEvent.PsstCompareEmoji ->
+                    sessionCoroutineScope.launch { sessionVerificationService.startSasVerification() }
                 IncomingVerificationViewEvent.StartVerification ->
                     stateAndDispatch.dispatchAction(StateMachineEvent.AcceptIncomingRequest)
                 IncomingVerificationViewEvent.IgnoreVerification ->
@@ -153,10 +157,20 @@ class IncomingVerificationPresenter(
             }
         }
 
+        // PSST (D81): QR code verification after accepting; reason of a cancellation
+        val psstQr = rememberPsstQrUi(
+            sessionVerificationService,
+            active = stateAndDispatch.state.value == StateMachineState.AcceptingIncomingVerification,
+        )
+        val psstCancelInfo = remember(step) {
+            if (step is Step.Canceled || step is Step.Failure) psstCancelInfo(sessionVerificationService) else null
+        }
         return IncomingVerificationState(
             step = step,
             request = verificationRequest,
             eventSink = ::handleEvent,
+            psstQr = psstQr,
+            psstCancelInfo = psstCancelInfo,
         )
     }
 

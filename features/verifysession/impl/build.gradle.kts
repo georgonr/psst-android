@@ -34,6 +34,8 @@ dependencies {
     implementation(projects.libraries.designsystem)
     implementation(projects.libraries.sessionStorage.api)
     implementation(projects.libraries.uiStrings)
+    // PSST (D81): QR code device verification (camera scanner, QR image)
+    implementation(projects.libraries.qrcode)
     api(libs.statemachine)
     api(projects.features.verifysession.api)
 

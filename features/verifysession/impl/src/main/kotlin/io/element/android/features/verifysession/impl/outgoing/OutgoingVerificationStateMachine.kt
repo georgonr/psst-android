@@ -74,6 +74,10 @@ class OutgoingVerificationStateMachine(
                 on<Event.StartSasVerification> { _, state ->
                     state.override { State.StartingSasVerification.andLogStateChange() }
                 }
+                // PSST (D81): a QR code verification finishes without the emoji steps
+                on<Event.DidAcceptChallenge> { _, state ->
+                    state.override { State.Completed.andLogStateChange() }
+                }
             }
             inState<State.Canceled> {
                 on<Event.Reset> { _, state ->
