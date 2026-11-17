@@ -114,6 +114,7 @@ fun RoomDetailsView(
     openAvatarPreview: (name: String, url: String) -> Unit,
     openPollHistory: () -> Unit,
     openMediaGallery: () -> Unit,
+    psstOpenSearch: () -> Unit = {},
     openAdminSettings: () -> Unit,
     onJoinCallClick: (CallIntent) -> Unit,
     onPinnedMessagesClick: () -> Unit,
@@ -239,6 +240,12 @@ fun RoomDetailsView(
             }
             // Room content
             PreferenceCategory {
+                // PSST (D80): search messages of this room
+                ListItem(
+                    content = { Text(stringResource(R.string.psst_room_search_item)) },
+                    leadingContent = ListItemContent.Icon(IconSource.Vector(CompoundIcons.Search())),
+                    onClick = psstOpenSearch,
+                )
                 MediaGalleryItem(
                     onClick = openMediaGallery
                 )

@@ -114,7 +114,8 @@ class RustMessageSearch(
             // The SDK parses this with tantivy's strict query parser, where `:` and friends are
             // syntax rather than text — a pasted URL fails the whole search. Escape so the query is
             // searched literally. The caller keeps the raw string; only the SDK sees the escaped one.
-            inner.setQuery(query.escapeForTantivy())
+            // PSST (D80): words only, each required and matched as a prefix by the psst SDK build.
+            inner.setQuery(query.toPsstSearchQuery())
         }
     }
 

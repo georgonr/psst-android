@@ -7,6 +7,9 @@
 
 package io.element.android.features.home.impl.search
 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.SpanStyle
+import io.element.android.libraries.designsystem.psst.PsstSearchHighlight
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -191,6 +194,10 @@ private fun GlobalSearchContent(
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth().alpha(isLoadingAlpha))
                 }
 
+                // PSST (D80): tell that older history is still being indexed
+                if (state.psstIndexing && state.currentTarget == GlobalSearchTarget.MESSAGES && state.queryState.text.isNotBlank()) {
+                    psstIndexingRow()
+                }
                 when {
                     state.queryState.text.isBlank() -> if (historyResults.isNotEmpty()) {
                         searchHistory(
@@ -214,6 +221,7 @@ private fun GlobalSearchContent(
                     )
                     else -> searchResultItems(
                         results = results,
+                        query = state.queryState.text.toString(),
                         onSearchResultSelected = onSelectSearchResult,
                     )
                 }
@@ -522,8 +530,20 @@ private fun LazyListScope.searchHistory(
     }
 }
 
+private fun LazyListScope.psstIndexingRow() {
+    item(key = "psst_indexing") {
+        Text(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            text = stringResource(R.string.psst_search_indexing),
+            style = ElementTheme.typography.fontBodySmRegular,
+            color = ElementTheme.colors.textSecondary,
+        )
+    }
+}
+
 private fun LazyListScope.searchResultItems(
     results: GlobalSearchResults?,
+    query: String,
     onSearchResultSelected: (RoomId, EventId?) -> Unit,
 ) {
     when (results) {
@@ -534,6 +554,7 @@ private fun LazyListScope.searchResultItems(
         )
         is GlobalSearchResults.MessageSearchResults -> messageSearchResults(
             results = results.results,
+            query = query,
             onSearchResultSelected = onSearchResultSelected,
         )
     }
@@ -628,6 +649,7 @@ private fun LazyListScope.roomListResults(
 
 private fun LazyListScope.messageSearchResults(
     results: ImmutableList<MessageSearchListItem>,
+    query: String,
     onSearchResultSelected: (RoomId, EventId?) -> Unit,
 ) {
     if (results.isNotEmpty()) {
@@ -661,6 +683,8 @@ private fun LazyListScope.messageSearchResults(
                 roomName = result.roomInfo.name ?: result.roomInfo.id.value,
                 body = result.body,
                 formattedTimestamp = result.formattedTimestamp,
+                query = query,
+                senderName = result.senderName,
             )
             is MessageSearchListItem.Media -> {
                 MediaMessageSearchResultItemView(
@@ -687,6 +711,8 @@ private fun TextMessageSearchResultItemView(
     body: String,
     formattedTimestamp: String,
     modifier: Modifier = Modifier,
+    query: String = "",
+    senderName: String = "",
 ) {
     Row(
         modifier = modifier
@@ -721,8 +747,10 @@ private fun TextMessageSearchResultItemView(
                     color = ElementTheme.colors.textSecondary,
                 )
             }
+            // PSST (D80): snippet around the first match, searched words highlighted
+            val highlight = SpanStyle(color = ElementTheme.colors.textActionAccent, fontWeight = FontWeight.Bold)
             Text(
-                text = body,
+                text = remember(body, query) { PsstSearchHighlight.snippet(body, query, highlight, prefix = "$senderName: ") },
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = ElementTheme.typography.fontBodyMdRegular,

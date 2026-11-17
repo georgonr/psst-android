@@ -64,6 +64,7 @@ class RoomDetailsNode(
         fun navigateToRoomCall(callIntent: CallIntent)
         fun navigateToReportRoom()
         fun navigateToSelectNewOwnersWhenLeaving()
+        fun psstNavigateToSearch() = Unit
     }
 
     private val presenter = presenterFactory.create(this)
@@ -130,6 +131,7 @@ class RoomDetailsNode(
             openAvatarPreview = callback::navigateToAvatarPreview,
             openPollHistory = callback::navigateToPollHistory,
             openMediaGallery = callback::navigateToMediaGallery,
+            psstOpenSearch = callback::psstNavigateToSearch,
             openAdminSettings = callback::navigateToAdminSettings,
             onJoinCallClick = callback::navigateToRoomCall,
             onPinnedMessagesClick = callback::navigateToPinnedMessagesList,

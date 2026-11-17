@@ -7,6 +7,8 @@
 
 package io.element.android.features.home.impl.search
 
+import androidx.compose.runtime.collectAsState
+import io.element.android.libraries.matrix.api.search.psst.PsstSearchIndexing
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.runtime.Composable
@@ -77,6 +79,7 @@ class GlobalSearchPresenter(
     private val coroutineDispatchers: CoroutineDispatchers,
     private val matrixClient: MatrixClient,
     private val searchHistoryStore: SearchHistoryStore,
+    private val psstSearchIndexing: PsstSearchIndexing,
 ) : Presenter<GlobalSearchState> {
     @Composable
     override fun present(): GlobalSearchState {
@@ -94,6 +97,9 @@ class GlobalSearchPresenter(
         var showLearnMoreBottomSheet by rememberSaveable { mutableStateOf(false) }
 
         StartSearchBackfillWhenVisible(isEnabled = isEnabled, isSearchActive = isSearchActive)
+        // PSST (D80): show whether the history is still being indexed
+        val psstIndexing by psstSearchIndexing.isIndexing.collectAsState()
+        if (isSearchActive) LaunchedEffect(Unit) { psstSearchIndexing.observe() }
 
         val searchHistory by produceState<AsyncData<ImmutableList<SearchHistoryListItem>>>(initialValue = AsyncData.Uninitialized) {
             searchHistoryStore.history.collectLatest { history ->
@@ -288,6 +294,7 @@ class GlobalSearchPresenter(
             history = searchHistory,
             showLearnMoreBottomSheet = showLearnMoreBottomSheet,
             eventSink = ::handleEvent,
+            psstIndexing = isEnabled && psstIndexing,
         )
     }
 

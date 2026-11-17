@@ -140,6 +140,7 @@ class MessagesNode(
         fun navigateToRoomCall(roomId: RoomId, isAudioCall: Boolean)
         fun navigateToThread(threadRootId: ThreadId, focusedEventId: EventId?)
         fun navigateToRoomDetails()
+        fun psstNavigateToSearch() = Unit
         fun navigateToPinnedMessagesList()
         fun navigateToKnockRequestsList()
         fun navigateToDeveloperSettings()
@@ -290,6 +291,7 @@ class MessagesNode(
                 state = state,
                 onBackClick = { state.eventSink(MessagesEvent.MarkAsFullyReadAndExit) },
                 onRoomDetailsClick = callback::navigateToRoomDetails,
+                psstOnSearchClick = callback::psstNavigateToSearch,
                 onEventContentClick = { isLive, event ->
                     if (isLive) {
                         callback.handleEventClick(timelineController.mainTimelineMode(), event, canUseOverlay)

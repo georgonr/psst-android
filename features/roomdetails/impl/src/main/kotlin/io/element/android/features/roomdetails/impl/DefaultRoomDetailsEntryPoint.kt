@@ -37,4 +37,5 @@ internal fun InitialTarget.toNavTarget() = when (this) {
     is InitialTarget.RoomMemberDetails -> NavTarget.RoomMemberDetails(roomMemberId)
     is InitialTarget.RoomNotificationSettings -> NavTarget.RoomNotificationSettings(showUserDefinedSettingStyle = true)
     InitialTarget.RoomMemberList -> NavTarget.RoomMemberList
+    InitialTarget.PsstSearch -> NavTarget.PsstSearch
 }

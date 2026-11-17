@@ -30,7 +30,9 @@ data class GlobalSearchState(
     val results: AsyncData<GlobalSearchResults>,
     val history: AsyncData<ImmutableList<SearchHistoryListItem>>,
     val showLearnMoreBottomSheet: Boolean,
-    val eventSink: (GlobalSearchEvent) -> Unit
+    val eventSink: (GlobalSearchEvent) -> Unit,
+    /** PSST (D80): older history is still being indexed, results may be incomplete. */
+    val psstIndexing: Boolean = false,
 )
 
 /**

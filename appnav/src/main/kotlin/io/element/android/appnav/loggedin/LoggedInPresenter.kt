@@ -8,6 +8,10 @@
 
 package io.element.android.appnav.loggedin
 
+import io.element.android.libraries.matrix.api.search.psst.PsstSearchIndexing
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import android.Manifest
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -62,6 +66,7 @@ class LoggedInPresenter(
     private val networkMonitor: NetworkMonitor,
     private val localNetworkPermissionAdvisor: LocalNetworkPermissionAdvisor,
     permissionsPresenterFactory: PermissionsPresenter.Factory,
+    private val psstSearchIndexing: PsstSearchIndexing,
 ) : Presenter<LoggedInState> {
     private val localNetworkPermissionsPresenter: PermissionsPresenter =
         permissionsPresenterFactory.create(Manifest.permission.ACCESS_LOCAL_NETWORK)
@@ -74,6 +79,11 @@ class LoggedInPresenter(
         }.collectAsState(initial = false)
         val pusherRegistrationState = remember<MutableState<AsyncData<Unit>>> { mutableStateOf(AsyncData.Uninitialized) }
         LaunchedEffect(Unit) { preloadAccountManagementUrl() }
+        // PSST (D80): index the message history for search while psst is on screen
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
+        LaunchedEffect(lifecycle) {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { psstSearchIndexing.runWhileVisible() }
+        }
         LaunchedEffect(Unit) {
             sessionVerificationService.sessionVerifiedStatus
                 .onEach { sessionVerifiedStatus ->

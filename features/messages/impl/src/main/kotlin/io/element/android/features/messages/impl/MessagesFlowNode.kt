@@ -266,6 +266,10 @@ class MessagesFlowNode(
                         callback.navigateToRoomDetails()
                     }
 
+                    override fun psstNavigateToSearch() {
+                        callback.psstNavigateToSearch()
+                    }
+
                     override fun handleEventClick(
                         timelineMode: Timeline.Mode,
                         event: TimelineItem.Event,

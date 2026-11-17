@@ -8,6 +8,7 @@
 
 package io.element.android.features.roomdetails.impl
 
+import io.element.android.features.roomdetails.impl.psst.search.PsstRoomSearchNode
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -127,6 +128,9 @@ class RoomDetailsFlowNode(
         data object PollHistory : NavTarget
 
         @Parcelize
+        data object PsstSearch : NavTarget
+
+        @Parcelize
         data object MediaGallery : NavTarget
 
         @Parcelize
@@ -206,6 +210,10 @@ class RoomDetailsFlowNode(
 
                     override fun navigateToMediaGallery() {
                         backstack.push(NavTarget.MediaGallery)
+                    }
+
+                    override fun psstNavigateToSearch() {
+                        backstack.push(NavTarget.PsstSearch)
                     }
 
                     override fun navigateToAdminSettings() {
@@ -351,6 +359,19 @@ class RoomDetailsFlowNode(
             }
             is NavTarget.PollHistory -> {
                 pollHistoryEntryPoint.createNode(this, buildContext)
+            }
+            NavTarget.PsstSearch -> {
+                // PSST (D80): a result opens the timeline at that message
+                val callback = object : PsstRoomSearchNode.Callback {
+                    override fun openMessage(eventId: EventId) {
+                        val permalinkData = PermalinkData.RoomLink(
+                            roomIdOrAlias = room.roomId.toRoomIdOrAlias(),
+                            eventId = eventId,
+                        )
+                        callback.handlePermalinkClick(permalinkData, pushToBackstack = false)
+                    }
+                }
+                createNode<PsstRoomSearchNode>(buildContext, plugins = listOf(callback))
             }
             is NavTarget.MediaGallery -> {
                 val callback = object : MediaGalleryEntryPoint.Callback {

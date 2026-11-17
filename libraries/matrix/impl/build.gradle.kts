@@ -27,12 +27,15 @@ val elementCallVersion: String = providers.gradleProperty("elementCallLocalVersi
     .getOrElse(libs.versions.element.call.get())
 
 dependencies {
-    releaseImplementation(libs.matrix.sdk)
+    // PSST (D80): the psst CI puts the matrix-rust-sdk build with the psst search patch here (libraries/rustsdk/
+    // psst-rust-sdk.properties, psst repo scripts/android/rust-sdk); release builds use it too.
     if (file("${rootDir.path}/libraries/rustsdk/matrix-rust-sdk.aar").exists()) {
         println("\nNote: Using local binary of the Rust SDK.\n")
         debugImplementation(projects.libraries.rustsdk)
+        releaseImplementation(projects.libraries.rustsdk)
     } else {
         debugImplementation(libs.matrix.sdk)
+        releaseImplementation(libs.matrix.sdk)
     }
     // Disabled until the platform verifier is ready for production. See CertificateVerifier.kt.
 //    implementation(variantOf(libs.rustls.platform.verifier) { artifactType("aar") })

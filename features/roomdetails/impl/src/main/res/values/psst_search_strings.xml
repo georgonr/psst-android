@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D80): message search strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_room_search_item">Search messages</string>
+    <string name="psst_room_search_hint">Search in this chat</string>
+    <string name="psst_room_search_start">Type a word. Capital letters and diacritics do not matter, the beginning of a word is enough.</string>
+    <string name="psst_room_search_empty">No message in this chat contains “%1$s”.</string>
+    <string name="psst_search_indexing">Older messages are still being indexed – some results may be missing.</string>
+</resources>

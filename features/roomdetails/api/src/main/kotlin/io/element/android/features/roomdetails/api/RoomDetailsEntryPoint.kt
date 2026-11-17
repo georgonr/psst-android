@@ -33,6 +33,10 @@ interface RoomDetailsEntryPoint : FeatureEntryPoint {
 
         @Parcelize
         data object RoomNotificationSettings : InitialTarget
+
+        /** PSST (D80): "Hľadať v konverzácii". */
+        @Parcelize
+        data object PsstSearch : InitialTarget
     }
 
     data class Params(val initialElement: InitialTarget) : NodeInputs

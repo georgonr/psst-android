@@ -90,6 +90,7 @@ class RustMatrixClientFactory(
             Timber.tag("RustMatrixClient").i("Message search is disabled, deleting the stale search index")
             indexDirectory.deleteRecursively()
         }
+        if (isMessageSearchAvailable) psstResetSearchIndexIfOutdated(indexDirectory)
 
         // Use a dedicated delegate for this client, so that an auth error only affects this session
         val sessionDelegate = createSessionDelegate()
@@ -227,6 +228,25 @@ class RustMatrixClientFactory(
                 (clientBuilderEnterpriseHook.beforeClientCreation(RustMatrixClientBuilder(it)) as RustMatrixClientBuilder).inner
             }
     }
+}
+
+/**
+ * PSST (D80): an index written before the psst SDK build (plain tokenizer, no diacritics folding) cannot be searched
+ * with the folded queries, and the SDK only adds events it does not have yet. Delete it once: the SDK then reindexes
+ * the events stored in the event cache and the search backfill fetches the rest of the history.
+ * The marker survives the SDK's own `clear()` (it keeps unknown files).
+ */
+private const val PSST_SEARCH_INDEX_MARKER = "psst-folded-v1"
+
+internal fun psstResetSearchIndexIfOutdated(indexDirectory: File) {
+    val marker = File(indexDirectory, PSST_SEARCH_INDEX_MARKER)
+    if (marker.exists()) return
+    if (indexDirectory.exists()) {
+        Timber.tag("RustMatrixClient").i("PSST: search index from an older build, deleting it so it is rebuilt")
+        indexDirectory.deleteRecursively()
+    }
+    indexDirectory.mkdirs()
+    marker.createNewFile()
 }
 
 /**

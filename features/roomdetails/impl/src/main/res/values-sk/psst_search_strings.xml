@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D80): message search strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_room_search_item">Hľadať v správach</string>
+    <string name="psst_room_search_hint">Hľadať v konverzácii</string>
+    <string name="psst_room_search_start">Zadajte slovo. Veľké písmená ani diakritika nevadia, stačí aj začiatok slova.</string>
+    <string name="psst_room_search_empty">Žiadna správa v tejto konverzácii neobsahuje „%1$s“.</string>
+    <string name="psst_search_indexing">Staršie správy sa ešte indexujú – niektoré výsledky môžu chýbať.</string>
+</resources>

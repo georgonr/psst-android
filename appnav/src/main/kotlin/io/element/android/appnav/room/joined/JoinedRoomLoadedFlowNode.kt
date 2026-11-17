@@ -189,6 +189,9 @@ class JoinedRoomLoadedFlowNode(
             NavTarget.RoomNotificationSettings -> {
                 createRoomDetailsNode(buildContext, RoomDetailsEntryPoint.InitialTarget.RoomNotificationSettings)
             }
+            NavTarget.PsstSearch -> {
+                createRoomDetailsNode(buildContext, RoomDetailsEntryPoint.InitialTarget.PsstSearch)
+            }
             NavTarget.RoomMemberList -> {
                 createRoomDetailsNode(buildContext, RoomDetailsEntryPoint.InitialTarget.RoomMemberList)
             }
@@ -245,6 +248,10 @@ class JoinedRoomLoadedFlowNode(
                 backstack.push(NavTarget.RoomDetails)
             }
 
+            override fun psstNavigateToSearch() {
+                backstack.push(NavTarget.PsstSearch)
+            }
+
             override fun navigateToRoomMemberDetails(userId: UserId) {
                 backstack.push(NavTarget.RoomMemberDetails(userId))
             }
@@ -290,6 +297,10 @@ class JoinedRoomLoadedFlowNode(
 
         @Parcelize
         data object RoomMemberList : NavTarget
+
+        /** PSST (D80): search in this conversation (room details flow, search screen). */
+        @Parcelize
+        data object PsstSearch : NavTarget
 
         @Parcelize
         data class RoomMemberDetails(val userId: UserId) : NavTarget

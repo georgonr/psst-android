@@ -34,6 +34,7 @@ interface MessagesEntryPoint : FeatureEntryPoint {
 
     interface Callback : Plugin {
         fun navigateToRoomDetails()
+        fun psstNavigateToSearch() = Unit
         fun navigateToRoomMemberDetails(userId: UserId)
         fun handlePermalinkClick(data: PermalinkData, pushToBackstack: Boolean)
         fun forwardEvent(eventId: EventId)

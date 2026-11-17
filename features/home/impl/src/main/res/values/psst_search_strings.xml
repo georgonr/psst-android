@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D80): message search strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_search_indexing">Older messages are still being indexed – some results may be missing.</string>
+</resources>

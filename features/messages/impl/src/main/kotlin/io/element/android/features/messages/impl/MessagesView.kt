@@ -164,6 +164,7 @@ fun MessagesView(
     modifier: Modifier = Modifier,
     forceJumpToBottomVisibility: Boolean = false,
     customReactionBottomSheet: @Composable () -> Unit,
+    psstOnSearchClick: (() -> Unit)? = null,
 ) {
     val eventContentValidationState = LocalEventContentValidationState.current
 
@@ -294,7 +295,8 @@ fun MessagesView(
                                         displayThreads = state.timelineState.timelineMode !is Timeline.Mode.Thread && state.threads.hasThreads,
                                         roomCallState = state.roomCallState,
                                         onJoinCallClick = onJoinCallClick,
-                                        onThreadsListClick = onThreadsListClick
+                                        onThreadsListClick = onThreadsListClick,
+                                        psstOnSearchClick = psstOnSearchClick,
                                     )
                                 }
                             )
@@ -514,7 +516,17 @@ internal fun RowScope.MessagesMenuActions(
     roomCallState: RoomCallState,
     onJoinCallClick: (isAudioCall: Boolean) -> Unit,
     onThreadsListClick: () -> Unit,
+    psstOnSearchClick: (() -> Unit)? = null,
 ) {
+    // PSST (D80): search in this conversation
+    if (psstOnSearchClick != null) {
+        Icon(
+            modifier = Modifier.clickable(enabled = true, onClick = psstOnSearchClick),
+            imageVector = CompoundIcons.Search(),
+            contentDescription = stringResource(CommonStrings.action_search),
+        )
+        Spacer(Modifier.width(8.dp))
+    }
     if (displayThreads) {
         Icon(
             modifier = Modifier.clickable(enabled = true, onClick = onThreadsListClick),
