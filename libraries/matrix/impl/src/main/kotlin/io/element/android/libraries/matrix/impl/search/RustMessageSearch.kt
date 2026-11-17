@@ -121,6 +121,7 @@ class RustMessageSearch(
             inner.setQuery(query.toPsstSearchQuery())
             // timing only, never the query or the results (PII)
             Log.i("PsstSearch", "first page in ${SystemClock.elapsedRealtime() - started} ms (${query.length} chars)")
+            Unit
         }
     }
 
@@ -129,6 +130,7 @@ class RustMessageSearch(
             val started = SystemClock.elapsedRealtime()
             inner.paginate()
             Log.i("PsstSearch", "next page in ${SystemClock.elapsedRealtime() - started} ms")
+            Unit
         }
     }
 
