@@ -45,8 +45,7 @@ class DefaultPsstSearchIndexing(
         if (!matrixClient.isMessageSearchAvailable) return
         // Let the first sync and the room list settle before adding (low priority) back-paginations.
         delay(START_DELAY)
-        val lastCompletedAt = prefs.getLong(lastCompletedKey, 0L)
-        if (lastCompletedAt != 0L && System.currentTimeMillis() - lastCompletedAt < RERUN_AFTER.inWholeMilliseconds) return
+        if (!isSweepDue()) return
         val task = if (service.isSearchBackfillRunning()) {
             null
         } else {
@@ -77,6 +76,11 @@ class DefaultPsstSearchIndexing(
             task?.close()
             indexing.value = service.isSearchBackfillRunning()
         }
+    }
+
+    override fun isSweepDue(): Boolean {
+        val lastCompletedAt = prefs.getLong(lastCompletedKey, 0L)
+        return lastCompletedAt == 0L || System.currentTimeMillis() - lastCompletedAt >= RERUN_AFTER.inWholeMilliseconds
     }
 
     override suspend fun observe() {

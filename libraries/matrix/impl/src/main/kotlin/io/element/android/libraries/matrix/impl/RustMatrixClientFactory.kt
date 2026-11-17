@@ -8,6 +8,7 @@
 
 package io.element.android.libraries.matrix.impl
 
+import uniffi.matrix_sdk.BackupDownloadStrategy
 import dev.zacsweers.metro.Inject
 import io.element.android.features.enterprise.api.ClientBuilderEnterpriseHook
 import io.element.android.libraries.androidutils.crypto.ClientSecret
@@ -186,6 +187,11 @@ class RustMatrixClientFactory(
                 )
             )
             .enableShareHistoryOnInvite(true)
+            // PSST (D80): download all room keys from the key backup once the recovery key is entered (or received
+            // from another device). The upstream default (one key after a decryption failure) is only triggered by
+            // the timeline, so after a new login the history indexed by the search backfill stayed encrypted and
+            // could not be searched until each conversation was scrolled through.
+            .backupDownloadStrategy(BackupDownloadStrategy.ONE_SHOT)
             .threadsEnabled(featureFlagService.isFeatureEnabled(FeatureFlags.Threads), threadSubscriptions = false)
             .run {
                 if (isMessageSearchAvailable) {

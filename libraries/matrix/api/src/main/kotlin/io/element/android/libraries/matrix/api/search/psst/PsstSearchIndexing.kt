@@ -20,6 +20,9 @@ interface PsstSearchIndexing {
      */
     suspend fun runWhileVisible()
 
+    /** False when a complete sweep of this device finished less than a day ago (new messages are indexed live). */
+    fun isSweepDue(): Boolean
+
     /** Refresh [isIndexing] while a search screen is shown (a backfill may have been started elsewhere). */
     suspend fun observe()
 }

@@ -328,7 +328,8 @@ class GlobalSearchPresenter(
     ) {
         val coroutineScope = rememberCoroutineScope()
         var hasBackfillRun by rememberSaveable { mutableStateOf(false) }
-        if (isEnabled && isSearchActive && !hasBackfillRun) {
+        // PSST (D80): not again when psst's own sweep (LoggedInPresenter) completed less than a day ago
+        if (isEnabled && isSearchActive && !hasBackfillRun && psstSearchIndexing.isSweepDue()) {
             DisposableEffect(Unit) {
                 // When we open the message search, we want to backfill the search results so that we can show the user more results if they scroll down.
                 val handle = matrixClient.searchBackfillService.startSearchBackfill(SearchBackfillStrategy.FOREGROUND).getOrNull()
