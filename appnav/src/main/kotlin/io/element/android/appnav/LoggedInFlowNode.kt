@@ -581,6 +581,8 @@ class LoggedInFlowNode(
                     callback = object : IncomingVerificationEntryPoint.Callback {
                         override fun onDone() {
                             backstack.pop()
+                            // PSST (D81): answered over the FTUE — let the FTUE continue if this session is verified now
+                            ftueService.psstOnVerifiedByIncomingRequest()
                         }
                     },
                 )

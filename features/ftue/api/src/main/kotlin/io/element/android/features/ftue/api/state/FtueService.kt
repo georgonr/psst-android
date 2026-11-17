@@ -16,6 +16,12 @@ import kotlinx.coroutines.flow.StateFlow
 interface FtueService {
     /** The current state of the FTUE. */
     val state: StateFlow<FtueState>
+
+    /**
+     * PSST (D81): this session was verified from an incoming request shown over the FTUE (QR code or emoji started by
+     * another device); there is no "verified" screen of the FTUE to confirm, so continue the FTUE.
+     */
+    fun psstOnVerifiedByIncomingRequest() = Unit
 }
 
 /** The state of the FTUE. */

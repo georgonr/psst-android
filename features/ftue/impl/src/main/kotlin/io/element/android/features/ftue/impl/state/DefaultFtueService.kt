@@ -142,6 +142,8 @@ class DefaultFtueService(
         return lockScreenService.isSetupRequired().first()
     }
 
+    override fun psstOnVerifiedByIncomingRequest() = onUserCompletedSessionVerification()
+
     fun onUserCompletedSessionVerification() {
         userNeedsToConfirmSessionVerificationSuccess.value = false
     }
