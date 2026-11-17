@@ -8,6 +8,7 @@
 
 package io.element.android.features.verifysession.impl.outgoing
 
+import io.element.android.features.verifysession.impl.psst.subtitleRes
 import androidx.compose.foundation.layout.Column
 import io.element.android.features.verifysession.impl.psst.PsstVerificationCancelReason
 import io.element.android.features.verifysession.impl.psst.PsstQrVerificationSection
@@ -106,7 +107,12 @@ fun OutgoingVerificationView(
                 )
             },
             header = {
-                OutgoingVerificationHeader(step = step, request = state.request, psstQrAvailable = state.psstQr.available)
+                OutgoingVerificationHeader(
+                    step = step,
+                    request = state.request,
+                    psstQrAvailable = state.psstQr.available,
+                    psstQrSubtitle = state.psstQr.subtitleRes(),
+                )
             },
             footer = {
                 OutgoingVerificationBottomMenu(
@@ -138,7 +144,12 @@ fun OutgoingVerificationView(
 }
 
 @Composable
-private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.Outgoing, psstQrAvailable: Boolean = false) {
+private fun OutgoingVerificationHeader(
+    step: Step,
+    request: VerificationRequest.Outgoing,
+    psstQrAvailable: Boolean = false,
+    psstQrSubtitle: Int? = null,
+) {
     val iconStyle = when (step) {
         Step.Loading -> error("Should not happen")
         Step.AwaitingOtherDeviceResponse,
@@ -184,7 +195,7 @@ private fun OutgoingVerificationHeader(step: Step, request: VerificationRequest.
         }
         Step.AwaitingOtherDeviceResponse -> R.string.screen_session_verification_waiting_subtitle
         Step.Canceled -> R.string.screen_session_verification_failed_subtitle
-        Step.Ready -> if (psstQrAvailable) R.string.psst_qr_subtitle else R.string.screen_session_verification_ready_subtitle
+        Step.Ready -> psstQrSubtitle ?: R.string.screen_session_verification_ready_subtitle
         Step.Completed -> when (request) {
             is VerificationRequest.Outgoing.CurrentSession -> R.string.screen_identity_confirmed_subtitle
             is VerificationRequest.Outgoing.User -> R.string.screen_session_verification_complete_user_subtitle

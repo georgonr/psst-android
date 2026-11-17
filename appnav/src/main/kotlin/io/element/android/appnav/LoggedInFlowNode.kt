@@ -183,9 +183,11 @@ class LoggedInFlowNode(
         lifecycleScope.launch {
             // Wait for the RoomList UI to be ready so the incoming verification screen can be displayed on top of it
             // Otherwise, the RoomList UI may be incorrectly displayed on top
+            // PSST (D81): also on top of the FTUE, so a new, unverified device can answer a verification started by
+            // an already verified device (it is still on "Confirm your digital identity" then, without Home)
             withTimeout(5.seconds) {
                 backstack.elements.first { elements ->
-                    elements.any { it.key.navTarget == NavTarget.Home }
+                    elements.any { it.key.navTarget == NavTarget.Home || it.key.navTarget == NavTarget.Ftue }
                 }
             }
 

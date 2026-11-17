@@ -3,6 +3,8 @@
 <resources>
     <string name="psst_qr_title">Overte zariadenie</string>
     <string name="psst_qr_subtitle">Naskenujte QR kód zobrazený na druhom zariadení, nechajte ho naskenovať kód nižšie, alebo porovnajte emoji.</string>
+    <string name="psst_qr_subtitle_scan_only">Naskenujte QR kód zobrazený na druhom zariadení alebo porovnajte emoji.</string>
+    <string name="psst_qr_subtitle_show_only">Naskenujte kód nižšie druhým zariadením alebo porovnajte emoji.</string>
     <string name="psst_qr_show_hint">Naskenujte tento kód druhým zariadením.</string>
     <string name="psst_qr_show_hint_both">Naskenujte tento kód druhým zariadením – alebo týmto naskenujte kód druhého zariadenia.</string>
     <string name="psst_qr_code_description">QR kód na overenie</string>
@@ -11,10 +13,10 @@
     <string name="psst_qr_scan_hint">Namierte fotoaparát na QR kód zobrazený na druhom zariadení.</string>
     <string name="psst_qr_scan_stop">Zastaviť skenovanie</string>
     <string name="psst_qr_compare_emoji">Porovnať emoji</string>
-    <string name="psst_qr_scanned_question">Druhé zariadenie naskenovalo tento kód. Zobrazuje, že overenie sa podarilo?</string>
-    <string name="psst_qr_scanned_yes">Áno, zobrazuje</string>
+    <string name="psst_qr_scanned_question">Druhé zariadenie naskenovalo tento kód. Ukazuje zelený štít?</string>
+    <string name="psst_qr_scanned_yes">Áno, vidím zelený štít</string>
     <string name="psst_qr_scanned_no">Nie – zastaviť overenie</string>
-    <string name="psst_qr_reciprocated">Kód je naskenovaný. Potvrďte overenie na druhom zariadení.</string>
+    <string name="psst_qr_reciprocated">Kód je naskenovaný. Na druhom zariadení potvrďte, že tento telefón ukazuje zelený štít.</string>
     <string name="psst_qr_finishing">Dokončuje sa overenie…</string>
     <string name="psst_qr_camera_denied">Bez prístupu ku kamere sa QR kód nedá naskenovať. Povoľte kameru v nastaveniach systému alebo namiesto toho porovnajte emoji.</string>
     <string name="psst_qr_open_settings">Otvoriť nastavenia</string>

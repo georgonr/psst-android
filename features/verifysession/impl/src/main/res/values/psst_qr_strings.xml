@@ -3,6 +3,8 @@
 <resources>
     <string name="psst_qr_title">Verify the device</string>
     <string name="psst_qr_subtitle">Scan the QR code shown on the other device, let it scan the code below, or compare emoji.</string>
+    <string name="psst_qr_subtitle_scan_only">Scan the QR code shown on the other device, or compare emoji.</string>
+    <string name="psst_qr_subtitle_show_only">Scan the code below with the other device, or compare emoji.</string>
     <string name="psst_qr_show_hint">Scan this code with the other device.</string>
     <string name="psst_qr_show_hint_both">Scan this code with the other device – or scan the other device\'s code with this one.</string>
     <string name="psst_qr_code_description">Verification QR code</string>
@@ -11,10 +13,10 @@
     <string name="psst_qr_scan_hint">Point the camera at the QR code shown on the other device.</string>
     <string name="psst_qr_scan_stop">Stop scanning</string>
     <string name="psst_qr_compare_emoji">Compare emoji</string>
-    <string name="psst_qr_scanned_question">The other device scanned this code. Does it show that the verification succeeded?</string>
-    <string name="psst_qr_scanned_yes">Yes, it does</string>
+    <string name="psst_qr_scanned_question">The other device scanned this code. Does it show a green shield?</string>
+    <string name="psst_qr_scanned_yes">Yes, I see a green shield</string>
     <string name="psst_qr_scanned_no">No – stop the verification</string>
-    <string name="psst_qr_reciprocated">Code scanned. Confirm the verification on the other device.</string>
+    <string name="psst_qr_reciprocated">Code scanned. On the other device, confirm that this phone shows a green shield.</string>
     <string name="psst_qr_finishing">Finishing the verification…</string>
     <string name="psst_qr_camera_denied">Without camera access the QR code cannot be scanned. Allow the camera in the system settings, or compare emoji instead.</string>
     <string name="psst_qr_open_settings">Open settings</string>

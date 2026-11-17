@@ -8,6 +8,8 @@
  */
 package io.element.android.features.verifysession.impl.psst
 
+import io.element.android.libraries.designsystem.theme.components.Icon
+import io.element.android.compound.tokens.generated.CompoundIcons
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -163,7 +165,15 @@ fun PsstQrVerificationSection(
                 return@Column
             }
             PsstQrProgress.Reciprocated -> {
-                Waiting(stringResource(R.string.psst_qr_reciprocated))
+                // The other device asks whether this one shows a green shield
+                Icon(
+                    modifier = Modifier.size(96.dp),
+                    imageVector = CompoundIcons.Verified(),
+                    contentDescription = null,
+                    tint = ElementTheme.colors.iconSuccessPrimary,
+                )
+                Info(stringResource(R.string.psst_qr_reciprocated))
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
                 return@Column
             }
             PsstQrProgress.Confirmed, PsstQrProgress.Done -> {
@@ -272,6 +282,14 @@ private fun PsstQrScanResult.messageRes(): Int = when (this) {
     PsstQrScanResult.KeyMismatch -> R.string.psst_qr_error_mismatch
     PsstQrScanResult.NotApplicable -> R.string.psst_qr_error_not_active
     PsstQrScanResult.Failed, PsstQrScanResult.Started -> R.string.psst_qr_error_failed
+}
+
+/** Subtitle of the verification screen while QR verification is offered (null: keep the upstream one). */
+fun PsstQrUi.subtitleRes(): Int? = when {
+    !available -> null
+    qrCode != null && options.canScanQrCode -> R.string.psst_qr_subtitle
+    qrCode != null -> R.string.psst_qr_subtitle_show_only
+    else -> R.string.psst_qr_subtitle_scan_only
 }
 
 /** Why the verification stopped (shown on the "failed" screens), or nothing when unknown. */
