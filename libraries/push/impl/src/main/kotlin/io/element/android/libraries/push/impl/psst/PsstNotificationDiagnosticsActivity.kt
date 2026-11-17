@@ -1,7 +1,7 @@
 /*
  * PSST (D67): Settings → Notifications → "Diagnostika upozornení (psst)".
  * Shows what the phone really does with psst notifications — system switches, channels (importance as the user/OEM
- * left it), active notifications, how the system ranked the last ones (optional listener) and the log of pushes and
+ * left it), active notifications with their effective (conversation) channel and the log of pushes and
  * posted notifications — offers two self-tests (posted after 10 s so the phone can be locked) and saves everything
  * to one text file (Downloads) + share sheet with one button. No message text or names are recorded.
  */
@@ -63,11 +63,9 @@ class PsstNotificationDiagnosticsActivity : Activity() {
         column.addView(TextView(this).apply {
             text = t(
                 "1) Stlačte test, do 10 s zamknite telefón (alebo nechajte odomknutý) a sledujte, či príde vyskakovacie okno, " +
-                    "zvuk a záznam na zamknutej obrazovke. 2) Voliteľne povoľte psst prístup k upozorneniam — appka potom " +
-                    "zaznamená, ako ich telefón zaradil. 3) „Uložiť a odoslať“ uloží správu do Stiahnuté a ponúkne odoslanie.",
+                    "zvuk a záznam na zamknutej obrazovke. 2) „Uložiť a odoslať“ uloží správu do Stiahnuté a ponúkne odoslanie.",
                 "1) Tap a test, lock the phone within 10 s (or keep it unlocked) and watch for a pop-up, sound and the lock " +
-                    "screen. 2) Optionally allow psst notification access so it records how the phone ranked them. " +
-                    "3) “Save and send” stores the report in Downloads and opens the share sheet.",
+                    "screen. 2) “Save and send” stores the report in Downloads and opens the share sheet.",
             )
             setPadding(0, pad / 2, 0, pad / 2)
         })
@@ -81,9 +79,6 @@ class PsstNotificationDiagnosticsActivity : Activity() {
         )
         button(t("Test: správa ako z chatu (o 10 s)", "Test: chat-like message (in 10 s)")) { scheduleTest(chatLike = true) }
         button(t("Test: jednoduché upozornenie (o 10 s)", "Test: plain notification (in 10 s)")) { scheduleTest(chatLike = false) }
-        button(t("Povoliť prístup k upozorneniam (voliteľné)", "Allow notification access (optional)")) {
-            runCatching { startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)) }
-        }
         button(t("Nastavenia upozornení psst", "psst notification settings")) {
             runCatching {
                 startActivity(Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, packageName))
@@ -148,7 +143,6 @@ class PsstNotificationDiagnosticsActivity : Activity() {
             appendLine("background restricted: ${getSystemService(ActivityManager::class.java).isBackgroundRestricted}")
             appendLine("standby bucket: ${getSystemService(UsageStatsManager::class.java).appStandbyBucket}")
         }
-        appendLine("listener access: ${listenerEnabled()}")
         settingsMatching().forEach { appendLine(it) }
         appendLine()
         appendLine("== channels")
@@ -162,13 +156,17 @@ class PsstNotificationDiagnosticsActivity : Activity() {
         appendLine("== active notifications")
         nm.activeNotifications.forEach { sbn ->
             val n = sbn.notification
-            val ranking = PsstNotificationListener.instance?.let { l ->
-                runCatching { PsstNotificationListener.describe(sbn, l.currentRanking) }.getOrNull()
+            // PSST (D83): no notification listener any more → the effective channel is read directly: a conversation
+            // can have its own channel (API 30+) whose importance/sound the user or One UI changed separately
+            val effective = if (Build.VERSION.SDK_INT >= 30 && n.channelId != null && n.shortcutId != null) {
+                runCatching { nm.getNotificationChannel(n.channelId, n.shortcutId) }.getOrNull()
+            } else {
+                null
             }
             appendLine(
                 "id=${sbn.id} tag=${PsstNotifLog.short(sbn.tag)} ch=${if (Build.VERSION.SDK_INT >= 26) n.channelId else "-"} " +
                     "summary=${n.flags and Notification.FLAG_GROUP_SUMMARY != 0} age=${(System.currentTimeMillis() - sbn.postTime) / 1000}s" +
-                    (ranking?.let { "\n    RANK $it" } ?: "")
+                    (effective?.let { "\n    CHANNEL ${describe(it)}" } ?: "")
             )
         }
         appendLine()
@@ -218,9 +216,6 @@ class PsstNotificationDiagnosticsActivity : Activity() {
         }
         return out.distinct()
     }
-
-    private fun listenerEnabled(): Boolean =
-        NotificationManagerCompat.getEnabledListenerPackages(this).contains(packageName)
 
     private fun export() {
         val report = buildReport()

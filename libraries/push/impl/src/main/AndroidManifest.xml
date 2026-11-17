@@ -33,21 +33,13 @@
             android:exported="false"
             android:label="psst"
             android:theme="@android:style/Theme.DeviceDefault.Light" />
-        <!-- PSST (D67): Settings → Notifications → notification diagnostics + optional listener (own notifications only) -->
+        <!-- PSST (D67): Settings → Notifications → notification diagnostics. No NotificationListenerService (D83): Play Protect
+             blocks sideloaded apps that declare one. -->
         <activity
             android:name=".psst.PsstNotificationDiagnosticsActivity"
             android:exported="false"
             android:label="psst"
             android:theme="@android:style/Theme.DeviceDefault.Light" />
-        <service
-            android:name=".psst.PsstNotificationListener"
-            android:exported="true"
-            android:label="psst"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
 
         <provider
             android:name=".notifications.NotificationsFileProvider"
