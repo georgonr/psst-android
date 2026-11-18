@@ -215,6 +215,14 @@ private fun GlobalSearchContent(
                     } else {
                         startSearching()
                     }
+                    // PSST (D84): upstream showed the MESSAGES empty state ("No results in the last 3 months … in your
+                    // recent messages") on the Chats tab too, so a word that is in messages but in no chat name looked
+                    // like a broken message search. The Chats tab now says that no chat name matches, and offers the
+                    // message results.
+                    results?.isEmpty() == true && state.currentTarget == GlobalSearchTarget.ROOMS -> psstNoChatResults(
+                        query = state.queryState.text.toString(),
+                        onSearchMessages = { state.eventSink(GlobalSearchEvent.UpdateTarget(GlobalSearchTarget.MESSAGES)) },
+                    )
                     results?.isEmpty() == true -> emptySearchResults(
                         query = state.queryState.text.toString(),
                         onClickLearnMore = onClickLearnMore,
@@ -525,6 +533,31 @@ private fun LazyListScope.searchHistory(
                 imageVector = CompoundIcons.Close(),
                 contentDescription = stringResource(CommonStrings.action_remove),
                 tint = ElementTheme.colors.iconSecondary,
+            )
+        }
+    }
+}
+
+/** PSST (D84): the Chats tab found no chat name; the words may still be in messages. */
+private fun LazyListScope.psstNoChatResults(
+    query: String,
+    onSearchMessages: () -> Unit,
+) {
+    item(key = "psst_no_chats") {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            IconTitleSubtitleMolecule(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 40.dp, end = 40.dp, top = 40.dp, bottom = 24.dp),
+                title = stringResource(R.string.psst_search_no_chats_title),
+                subTitle = stringResource(R.string.psst_search_no_chats_message, query),
+                iconStyle = BigIcon.Style.Default(CompoundIcons.Search()),
+            )
+            Button(
+                text = stringResource(R.string.psst_search_in_messages),
+                onClick = onSearchMessages,
             )
         }
     }

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PSST (D80): message search strings added by the psst fork (not managed by Localazy). -->
+<!-- PSST (D80, D84): message search strings added by the psst fork (not managed by Localazy). -->
 <resources>
     <string name="psst_search_indexing">Older messages are still being indexed – some results may be missing.</string>
+    <!-- D84: Chats tab of the search screen when no chat name matches (upstream showed the Messages empty state) -->
+    <string name="psst_search_no_chats_title">No chat with this name</string>
+    <string name="psst_search_no_chats_message">No chat is called “%1$s”. The words may be in your messages.</string>
+    <string name="psst_search_in_messages">Search in messages</string>
 </resources>

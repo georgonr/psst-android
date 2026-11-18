@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PSST (D80): message search strings added by the psst fork (not managed by Localazy). -->
+<!-- PSST (D80, D84): message search strings added by the psst fork (not managed by Localazy). -->
 <resources>
     <string name="psst_search_indexing">Staršie správy sa ešte indexujú – niektoré výsledky môžu chýbať.</string>
+    <!-- D84: Chats tab of the search screen when no chat name matches (upstream showed the Messages empty state) -->
+    <string name="psst_search_no_chats_title">Žiadna konverzácia s týmto názvom</string>
+    <string name="psst_search_no_chats_message">Žiadna konverzácia sa nevolá „%1$s“. Slová môžu byť vo vašich správach.</string>
+    <string name="psst_search_in_messages">Hľadať v správach</string>
+
+    <!-- D84: Slovak for the upstream search screen (Localazy has no Slovak for these yet, so the screen was English) -->
+    <string name="screen_search_empty_state_message">Hľadajte konverzácie a správy</string>
+    <string name="screen_search_empty_state_title">Začnite hľadať…</string>
+    <string name="screen_search_from_your_messages_header">Z vašich správ</string>
+    <string name="screen_search_history_limit_message">Hľadanie beží vo vašom zariadení, takže vaše šifrované správy ostávajú súkromné.\nZariadenie uchováva správy za posledné 3 mesiace, staršie sa zatiaľ nedajú vyhľadať.</string>
+    <string name="screen_search_history_limit_title">Hľadanie pokrýva posledné 3 mesiace</string>
+    <string name="screen_search_messages_no_results_message">Pre „%1$s“ sa vo vašich nedávnych správach nič nenašlo.</string>
+    <string name="screen_search_messages_no_results_title">Za posledné 3 mesiace nič</string>
+    <string name="screen_search_no_results_message">Pre „%1$s“ sa nič nenašlo. Skúste iné slovo.</string>
+    <string name="screen_search_recent_searches">Nedávne hľadania</string>
+    <string name="screen_search_tab_chats">Konverzácie</string>
+    <string name="screen_search_tab_messages">Správy</string>
 </resources>
