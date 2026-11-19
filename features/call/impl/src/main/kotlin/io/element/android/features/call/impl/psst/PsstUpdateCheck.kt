@@ -1,9 +1,9 @@
 /*
  * PSST: new-version check for the sideloaded APK (DECISIONS D63).
  *
- * psst for Android is installed from https://app.macet.eu/download (no store), so nothing tells the user that a newer
+ * psst for Android is installed from https://app.psst.pro/download (no store), so nothing tells the user that a newer
  * build exists. At most once per 12 h (from MainActivity.onResume) this reads the public
- * https://app.macet.eu/download/latest.json (the same file the download page and the desktop check use) and, when
+ * https://app.psst.pro/download/latest.json (the same file the download page and the desktop check use) and, when
  * android.build is newer than the installed build, offers to open the download page. The same build is offered again
  * only after 3 days. No user data is sent; the request is a plain GET without cookies.
  */
@@ -24,8 +24,8 @@ import java.util.Locale
 import kotlin.concurrent.thread
 
 object PsstUpdateCheck {
-    private const val LATEST_URL = "https://app.macet.eu/download/latest.json"
-    private const val PAGE_URL = "https://app.macet.eu/download/"
+    private const val LATEST_URL = "https://app.psst.pro/download/latest.json"
+    private const val PAGE_URL = "https://app.psst.pro/download/"
     private const val PREFS = "psst_update_check"
     private const val KEY_LAST_CHECK = "last_check"
     private const val KEY_OFFERED_BUILD = "offered_build"
@@ -79,10 +79,10 @@ object PsstUpdateCheck {
             .setTitle(if (sk()) "Nová verzia psst" else "New psst version")
             .setMessage(
                 if (sk()) {
-                    "K dispozícii je psst build $available (máte b$installed). Stiahnite si ho zo stránky app.macet.eu/download " +
+                    "K dispozícii je psst build $available (máte b$installed). Stiahnite si ho zo stránky app.psst.pro/download " +
                         "a nainštalujte cez pôvodnú appku — správy aj prihlásenie zostanú."
                 } else {
-                    "psst build $available is available (you have b$installed). Download it from app.macet.eu/download " +
+                    "psst build $available is available (you have b$installed). Download it from app.psst.pro/download " +
                         "and install it over the current app — your messages and sign-in are kept."
                 }
             )

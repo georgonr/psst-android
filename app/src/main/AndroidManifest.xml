@@ -86,9 +86,9 @@
                 <data android:scheme="@string/login_redirect_scheme" />
             </intent-filter>
             <!--
-              PSST: psst web links (permalinks of the psst web client, e.g. https://app.macet.eu/#/room/...).
+              PSST: psst web links (permalinks of the psst web client, e.g. https://app.psst.pro/#/room/...).
               The element.io hosts (app/develop/staging.element.io) and the mobile.element.io login links were removed.
-              Matching asset file (to be served by the psst server): https://app.macet.eu/.well-known/assetlinks.json
+              Matching asset file (to be served by the psst server): https://app.psst.pro/.well-known/assetlinks.json
             -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -97,9 +97,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="https" />
-                <data android:host="app.macet.eu" />
+                <data android:host="app.psst.pro" />
                 <!-- PSST (D63): only web-client permalinks (path "/" + fragment #/room/…, #/user/…). Other pages on
-                     app.macet.eu (/download/, /terms.html, /privacy.html, /admin) must open in the browser — otherwise
+                     app.psst.pro (/download/, /terms.html, /privacy.html, /admin) must open in the browser — otherwise
                      the in-app update offer "Download" opened psst itself. -->
                 <data android:path="/" />
             </intent-filter>

@@ -1,6 +1,6 @@
 # PSST: smoke test of the psst app.
 #  - the app starts and shows the psst onboarding,
-#  - the only sign-in option is "Sign in to chat.macet.eu" (+ QR code, + "Create account" on chat.macet.eu),
+#  - the only sign-in option is "Sign in to psst.pro" (+ QR code, + "Create account" on psst.pro),
 #  - nowhere can the user change / type another homeserver.
 # Screenshots are written to ~/.maestro/tests/psst/ (uploaded by the CI as "test-results").
 appId: eu.macet.psst.debug
@@ -11,21 +11,21 @@ appId: eu.macet.psst.debug
     permissions:
       all: allow
 - extendedWaitUntil:
-    visible: "Sign in to chat.macet.eu"
+    visible: "Sign in to psst.pro"
     timeout: 120000
 - takeScreenshot: /home/runner/.maestro/tests/psst/01-onboarding
 - runFlow: assertNoServerChoice.yaml
 - assertNotVisible: "Be in your element"
 - assertVisible: "Sign in with QR code"
-# PSST: "Create account" opens the MAS registration of chat.macet.eu (invite token required).
+# PSST: "Create account" opens the MAS registration of psst.pro (invite token required).
 - assertVisible: "Create account"
 
-# Sign in: only chat.macet.eu can be used
-- tapOn: "Sign in to chat.macet.eu"
+# Sign in: only psst.pro can be used
+- tapOn: "Sign in to psst.pro"
 - waitForAnimationToEnd:
     timeout: 15000
 - extendedWaitUntil:
-    notVisible: "Sign in to chat.macet.eu"
+    notVisible: "Sign in to psst.pro"
     timeout: 20000
     optional: true
 - takeScreenshot: /home/runner/.maestro/tests/psst/02-after-sign-in
@@ -33,16 +33,16 @@ appId: eu.macet.psst.debug
 - back
 - runFlow:
     when:
-      notVisible: "Sign in to chat.macet.eu"
+      notVisible: "Sign in to psst.pro"
     commands:
       - back
 - runFlow:
     when:
-      notVisible: "Sign in to chat.macet.eu"
+      notVisible: "Sign in to psst.pro"
     commands:
       - launchApp
 - extendedWaitUntil:
-    visible: "Sign in to chat.macet.eu"
+    visible: "Sign in to psst.pro"
     timeout: 30000
 
 # QR code sign-in
@@ -54,7 +54,7 @@ appId: eu.macet.psst.debug
 - back
 - runFlow:
     when:
-      notVisible: "Sign in to chat.macet.eu"
+      notVisible: "Sign in to psst.pro"
     commands:
       - back
 
@@ -62,7 +62,7 @@ appId: eu.macet.psst.debug
 - openLink: "https://mobile.element.io/element/?account_provider=matrix.org&login_hint=mxid:@alice:matrix.org"
 - launchApp
 - extendedWaitUntil:
-    visible: "Sign in to chat.macet.eu"
+    visible: "Sign in to psst.pro"
     timeout: 30000
 - takeScreenshot: /home/runner/.maestro/tests/psst/04-after-login-link
 - runFlow: assertNoServerChoice.yaml

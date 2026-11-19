@@ -23,7 +23,8 @@ android {
         buildConfig = true
     }
     defaultConfig {
-        buildConfigFieldStr("PSST_HOMESERVER", BuildTimeConfig.PSST_HOMESERVER)
+        buildConfigFieldStr("PSST_SERVER_NAME", BuildTimeConfig.PSST_SERVER_NAME)
+        buildConfigFieldStr("PSST_HOMESERVER_URL", BuildTimeConfig.PSST_HOMESERVER_URL)
     }
 }
 

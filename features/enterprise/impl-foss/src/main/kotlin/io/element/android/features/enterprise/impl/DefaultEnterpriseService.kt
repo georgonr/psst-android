@@ -37,9 +37,9 @@ class DefaultEnterpriseService(
 ) : EnterpriseService {
     override suspend fun isEnterpriseUser(sessionId: SessionId) = false
     override suspend fun tweakMasUrl(url: String, urlContentFetcher: ClientUrlContentFetcher) = url
-    // PSST: the app is locked to a single homeserver (chat.macet.eu). With a singleton allow list and
-    // canConnectToAnyAccountProvider() == false, the onboarding only offers "Sign in to chat.macet.eu" (+ QR code and
-    // "Create account" on chat.macet.eu via its MAS), never the "change account provider" / free text server input,
+    // PSST: the app is locked to a single homeserver (psst.pro at chat.psst.pro). With a singleton allow list and
+    // canConnectToAnyAccountProvider() == false, the onboarding only offers "Sign in to psst.pro" (+ QR code and
+    // "Create account" on psst.pro via its MAS), never the "change account provider" / free text server input,
     // and every other entry point (login links, QR code login, Element Classic import) is rejected by the access control.
     override fun accountProviderAllowList(): List<AccountProvider> = listOf(psstAccountProvider)
     override fun canConnectToAnyAccountProvider(): Boolean = false
@@ -90,9 +90,13 @@ class DefaultEnterpriseService(
     override fun getNoisyNotificationChannelId(sessionId: SessionId): String? = null
 }
 
-// PSST: the only allowed account provider. Server discovery (/.well-known/matrix/client) happens on this host.
-internal val psstAccountProvider = AccountProvider.Generic(
-    serverName = BuildConfig.PSST_HOMESERVER,
+// PSST (D85): the only allowed account provider. Shown as "psst.pro" (the server_name of the user IDs); the app
+// connects to the homeserver URL directly (no .well-known lookup), and a QR code login from the psst web/desktop, which
+// carries that homeserver URL, matches it.
+internal val psstAccountProvider = AccountProvider.Managed(
+    serverName = BuildConfig.PSST_SERVER_NAME,
+    baseUrl = BuildConfig.PSST_HOMESERVER_URL,
+    canUseServerName = false,
 )
 
 /**

@@ -2,7 +2,7 @@
 <!-- PSST: Firebase project "psst-macet" (only Cloud Messaging is enabled; no Analytics/Crashlytics).
      These values are public by design (they ship inside every APK). The API key is restricted in Google Cloud
      to package eu.macet.psst + the release signing certificate and to the FCM registration APIs only.
-     Push gateway is PSST's own Sygnal: https://chat.macet.eu/_matrix/push/v1/notify (FirebaseConfig.kt). -->
+     Push gateway is PSST's own Sygnal: https://chat.psst.pro/_matrix/push/v1/notify (FirebaseConfig.kt). -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="google_app_id" translatable="false" tools:ignore="UnusedResources">1:5949287930:android:1866646413fdbb5d908843</string>
     <string name="gcm_defaultSenderId" translatable="false">5949287930</string>

@@ -16,7 +16,7 @@ sealed interface OnBoardingEvent {
     ) : OnBoardingEvent
 
     // PSST: create an account on the forced (locked) account provider, i.e. open the OIDC (MAS) registration
-    // page of chat.macet.eu (prompt=create) directly, without going through the account provider screen.
+    // page of psst.pro (prompt=create) directly, without going through the account provider screen.
     data class OnSignUp(
         val defaultAccountProvider: AccountProvider
     ) : OnBoardingEvent

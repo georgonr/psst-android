@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 PSST (macet.eu), derived from Element X Android.
+ * Copyright 2026 PSST (psst.pro), derived from Element X Android.
  *
  * SPDX-License-Identifier: AGPL-3.0-only.
  * Please see LICENSE files in the repository root for full details.

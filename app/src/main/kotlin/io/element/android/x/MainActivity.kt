@@ -174,7 +174,7 @@ class MainActivity : NodeActivity() {
         // PSST (D68): psst is open → the verification request arrives by sync; drop the wake-up notification (id in PsstVerificationWake)
         androidx.core.app.NotificationManagerCompat.from(this).cancel(7_431)
         // PSST (D57, D61): setup wizard (notifications, lock screen, full-screen calls, battery); when nothing is
-        // missing, D63: check app.macet.eu/download for a newer APK (at most every 12 h)
+        // missing, D63: check app.psst.pro/download for a newer APK (at most every 12 h)
         if (io.element.android.features.call.impl.psst.PsstCallReadiness.maybePrompt(this) == null) {
             io.element.android.features.call.impl.psst.PsstUpdateCheck.maybeCheck(this)
         }

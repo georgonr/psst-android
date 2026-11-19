@@ -1,3 +1,5 @@
+import config.BuildTimeConfig
+import extension.buildConfigFieldStr
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 
@@ -15,6 +17,14 @@ plugins {
 
 android {
     namespace = "io.element.android.features.migration.impl"
+
+    // PSST (D85): AppMigration11 removes sessions of any other server than this one.
+    buildFeatures {
+        buildConfig = true
+    }
+    defaultConfig {
+        buildConfigFieldStr("PSST_SERVER_NAME", BuildTimeConfig.PSST_SERVER_NAME)
+    }
 }
 
 setupDependencyInjection()
@@ -39,4 +49,5 @@ dependencies {
     testImplementation(projects.libraries.preferences.test)
     testImplementation(projects.features.announcement.test)
     testImplementation(projects.features.rageshake.test)
+    testImplementation(projects.libraries.workmanager.test)
 }
