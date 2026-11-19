@@ -9,6 +9,8 @@
 package io.element.android.features.preferences.impl.about
 
 import android.app.Activity
+import android.content.Intent
+import androidx.core.net.toUri
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -41,6 +43,11 @@ class AboutNode(
         darkTheme: Boolean,
         elementLegal: ElementLegal,
     ) {
+        if (elementLegal.url.startsWith("mailto:")) {
+            // PSST (D87): contact e-mail → the user's mail app (no mail app: nothing happens)
+            runCatching { activity.startActivity(Intent(Intent.ACTION_SENDTO, elementLegal.url.toUri())) }
+            return
+        }
         activity.openUrlInChromeCustomTab(null, darkTheme, elementLegal.url)
     }
 

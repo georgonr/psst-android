@@ -11,8 +11,8 @@
 package io.element.android.libraries.push.impl.psst
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -264,8 +264,57 @@ class PsstNotificationsCallsActivity : Activity() {
         }
     }
 
+    /**
+     * PSST (D87): no REQUEST_IGNORE_BATTERY_OPTIMIZATIONS (Google Play allows it only for chat apps that cannot use FCM),
+     * so psst cannot ask for the exemption directly. Explain the two taps, then open the app's own system page
+     * (App info), where Battery / App battery usage → Unrestricted lives on Pixel, Samsung and most other phones.
+     */
+    private fun showBatteryHelp(): Boolean {
+        AlertDialog.Builder(this)
+            .setTitle(t("Bez obmedzenia batérie", "No battery restriction"))
+            .setMessage(
+                t(
+                    "Otvorí sa stránka „Informácie o aplikácii“ pre psst.\n\n" +
+                        "1. Ťuknite na Batéria (alebo Využitie batérie aplikáciou).\n" +
+                        "2. Zvoľte Bez obmedzení.\n" +
+                        "3. Vráťte sa späť do psst.",
+                    "The App info page for psst opens.\n\n" +
+                        "1. Tap Battery (or App battery usage).\n" +
+                        "2. Choose Unrestricted.\n" +
+                        "3. Come back to psst.",
+                )
+            )
+            .setPositiveButton(t("Otvoriť nastavenia", "Open settings"), null)
+            .setNegativeButton(t("Teraz nie", "Not now")) { _, _ -> }
+            .setOnDismissListener {
+                // "Not now" / Back: drop this row and continue with the rest of the queue
+                if (inFlight == Row.BATTERY && !batteryOpening) {
+                    inFlight = null
+                    refresh()
+                    processNext()
+                }
+                batteryOpening = false
+            }
+            .create()
+            .also { dialog ->
+                dialog.setOnShowListener {
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        batteryOpening = true
+                        dialog.dismiss()
+                        if (!open(appDetails(), Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))) {
+                            inFlight = null
+                            refresh()
+                        }
+                    }
+                }
+            }
+            .show()
+        return true
+    }
+
+    private var batteryOpening = false
+
     /** Returns true if something was started (permission dialog or settings screen). */
-    @SuppressLint("BatteryLife")
     private fun turnOn(row: Row): Boolean = when (row) {
         Row.NOTIFICATIONS -> if (Build.VERSION.SDK_INT >= 33 && !granted(Manifest.permission.POST_NOTIFICATIONS)) {
             requestOrSettings(Manifest.permission.POST_NOTIFICATIONS, "asked_post_notifications") || open(appNotificationSettings())
@@ -280,10 +329,7 @@ class PsstNotificationsCallsActivity : Activity() {
         }
         Row.FULL_SCREEN -> Build.VERSION.SDK_INT >= 34 &&
             open(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, "package:$packageName".toUri()), appNotificationSettings())
-        Row.BATTERY -> open(
-            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, "package:$packageName".toUri()),
-            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-        )
+        Row.BATTERY -> showBatteryHelp()
         Row.CALL_RINGING -> open(channelSettings(ringingChannel()), appNotificationSettings())
         Row.WAKE_SCREEN -> {
             PsstScreenWake.setEnabled(this, true)
@@ -305,7 +351,7 @@ class PsstNotificationsCallsActivity : Activity() {
                 refresh()
             }
             Row.MICROPHONE, Row.CAMERA -> open(appDetails())
-            Row.BATTERY -> open(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS), appDetails())
+            Row.BATTERY -> open(appDetails(), Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
             Row.FULL_SCREEN -> open(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, "package:$packageName".toUri()), appNotificationSettings())
             Row.CALL_RINGING -> open(channelSettings(ringingChannel()))
             Row.POPUP, Row.MESSAGE_SOUND, Row.LOCK_SCREEN -> open(channelSettings(messageChannel()))

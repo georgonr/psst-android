@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST: strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_about_delete_account">Zmazanie účtu</string>
+    <string name="psst_about_contact">Kontakt: psst@psst.pro</string>
+</resources>

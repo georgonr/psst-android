@@ -8,7 +8,6 @@
 
 package io.element.android.libraries.push.impl.battery
 
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -55,13 +54,9 @@ class AndroidBatteryOptimization(
             ?.isIgnoringBatteryOptimizations(context.packageName) == true
     }
 
-    @SuppressLint("BatteryLife")
     override fun requestDisablingBatteryOptimization(): Boolean {
-        val ignoreBatteryOptimizationsResult = launchAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, withData = true)
-        if (ignoreBatteryOptimizationsResult) {
-            return true
-        }
-        // Open settings as a fallback if the first attempt fails
+        // PSST (D87): no REQUEST_IGNORE_BATTERY_OPTIMIZATIONS (Google Play policy for FCM chat apps) → open the system
+        // list of battery optimisations, where the user picks psst → "Don't optimise" / "Unrestricted".
         return launchAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS, withData = false)
     }
 

@@ -15,9 +15,11 @@ import io.element.android.libraries.ui.strings.CommonStrings
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
-private const val COPYRIGHT_URL = BuildConfig.URL_COPYRIGHT
-private const val USE_POLICY_URL = BuildConfig.URL_ACCEPTABLE_USE
-private const val PRIVACY_URL = BuildConfig.URL_PRIVACY
+// PSST (D87): the legal pages live on psst.pro. BuildTimeConfig keeps app.psst.pro/*.html (they redirect here) because
+// MAS requires the OAuth client's tos/policy URIs on the client_uri host (app.psst.pro).
+private const val COPYRIGHT_URL = "https://psst.pro/terms"
+private const val USE_POLICY_URL = "https://psst.pro/terms"
+private const val PRIVACY_URL = "https://psst.pro/privacy"
 
 // PSST: link to the source code of this AGPL-3.0 fork.
 private const val SOURCE_CODE_URL = BuildConfig.URL_SOURCE_CODE
@@ -32,6 +34,10 @@ sealed class ElementLegal(
 
     // PSST
     data object SourceCode : ElementLegal(R.string.psst_about_source_code, SOURCE_CODE_URL)
+
+    // PSST (D87): Google Play / App Store — how to delete the account, and the operator's contact
+    data object DeleteAccount : ElementLegal(R.string.psst_about_delete_account, "https://psst.pro/delete-account")
+    data object Contact : ElementLegal(R.string.psst_about_contact, "mailto:psst@psst.pro")
 }
 
 fun getAllLegals(): ImmutableList<ElementLegal> {
@@ -40,6 +46,8 @@ fun getAllLegals(): ImmutableList<ElementLegal> {
         ElementLegal.AcceptableUsePolicy,
         ElementLegal.PrivacyPolicy,
         // PSST
+        ElementLegal.DeleteAccount,
+        ElementLegal.Contact,
         ElementLegal.SourceCode,
     )
 }

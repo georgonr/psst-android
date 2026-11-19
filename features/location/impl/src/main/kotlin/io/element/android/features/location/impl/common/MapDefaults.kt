@@ -8,7 +8,6 @@
 
 package io.element.android.features.location.impl.common
 
-import android.Manifest
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.spatialk.geojson.Position
 
@@ -22,5 +21,6 @@ object MapDefaults {
     )
     const val DEFAULT_ZOOM = 15.0
 
-    val permissions = listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+    // PSST (D87): location permissions removed from the app (Google Play); nothing to request.
+    val permissions = emptyList<String>()
 }

@@ -2,4 +2,7 @@
 <!-- PSST: strings added by the psst fork (not managed by Localazy). -->
 <resources>
     <string name="psst_about_source_code" translatable="false">Source code (AGPL-3.0): github.com/georgonr/psst-android</string>
+    <!-- PSST (D87) -->
+    <string name="psst_about_delete_account">Delete account</string>
+    <string name="psst_about_contact">Contact: psst@psst.pro</string>
 </resources>
