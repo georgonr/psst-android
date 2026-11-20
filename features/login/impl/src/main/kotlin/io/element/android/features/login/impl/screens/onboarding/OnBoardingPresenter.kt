@@ -124,7 +124,7 @@ class OnBoardingPresenter(
                         )
                     )
                 }
-                // PSST: account creation on the locked homeserver (MAS registration, invite token required there).
+                // PSST: account creation on the locked homeserver (open MAS registration with hCaptcha, D88).
                 is OnBoardingEvent.OnSignUp -> localCoroutineScope.launch {
                     accountProviderDataSource.setAccountProvider(event.defaultAccountProvider)
                     loginModeState.eventSink(
@@ -156,7 +156,7 @@ class OnBoardingPresenter(
             mustChooseAccountProvider = mustChooseAccountProvider,
             canLoginWithQrCode = canLoginWithQrCode,
             // PSST: upstream hides "Create account" when the account provider is forced (enterprise lock). psst is locked
-            // to psst.pro, whose MAS allows registration with an invite token, so it is also offered for the
+            // to psst.pro, whose MAS has open registration (hCaptcha, D88), so it is also offered for the
             // forced account provider (see OnBoardingEvent.OnSignUp). The lock itself is unchanged.
             canCreateAccount = OnBoardingConfig.CAN_CREATE_ACCOUNT &&
                 ((defaultAccountProvider == null && canConnectToAnyAccountProvider) || forcedAccountProvider != null),

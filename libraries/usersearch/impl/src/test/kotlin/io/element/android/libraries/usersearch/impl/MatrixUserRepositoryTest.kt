@@ -202,5 +202,33 @@ internal class MatrixUserRepositoryTest {
 
     private fun List<MatrixUser>.toUserSearchResults() = map { UserSearchResult(it) }
 
+    @Test
+    fun `search - PSST bare account name returns the exact user when the profile exists`() = runTest {
+        val profile = MatrixUser(userId = UserId("@jo:example.com"), displayName = A_USER_NAME)
+        val dataSource = FakeUserListDataSource().apply { givenUserProfile(profile) }
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+
+        repository.search("Jo").test {
+            assertThat(awaitItem().results).containsExactly(UserSearchResult(profile))
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `search - PSST bare account name adds the exact user to directory results`() = runTest {
+        val profile = MatrixUser(userId = UserId("@jana:example.com"), displayName = A_USER_NAME)
+        val dataSource = FakeUserListDataSource().apply { givenUserProfile(profile) }
+        val repository = MatrixUserRepository(FakeMatrixClient(SESSION_ID), dataSource)
+
+        repository.search("@jana").test {
+            assertThat(awaitItem().isSearching).isTrue()
+            awaitItem().also {
+                assertThat(it.isSearching).isFalse()
+                assertThat(it.results).containsExactly(UserSearchResult(profile))
+            }
+            awaitComplete()
+        }
+    }
+
     private fun placeholderResult(id: UserId = A_USER_ID, isUnresolved: Boolean = false) = UserSearchResult(MatrixUser(id), isUnresolved = isUnresolved)
 }

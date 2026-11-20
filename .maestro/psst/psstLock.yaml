@@ -17,7 +17,7 @@ appId: eu.macet.psst.debug
 - runFlow: assertNoServerChoice.yaml
 - assertNotVisible: "Be in your element"
 - assertVisible: "Sign in with QR code"
-# PSST: "Create account" opens the MAS registration of psst.pro (invite token required).
+# PSST: "Create account" opens the MAS registration of psst.pro (open, hCaptcha — D88).
 - assertVisible: "Create account"
 
 # Sign in: only psst.pro can be used
