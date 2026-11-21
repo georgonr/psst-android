@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PSST (D94): overrides of upstream (Localazy-managed) library strings that showed "Element" to the user.
+  Resources of the app module win over the ones of the library modules at merge time, so a Localazy sync of the
+  libraries cannot bring the Element wording back. Slovak in values-sk/psst_overrides.xml.
+  The list of every place and why is in PSST-ELEMENT-REMNANTS.md.
+-->
+<resources>
+    <!-- features/call/impl: label of the call activity (recents / task switcher) -->
+    <string name="element_call" translatable="false">psst</string>
+    <string name="screen_incoming_call_subtitle_android">Incoming psst call</string>
+    <string name="call_invalid_audio_device_bluetooth_devices_disabled">psst calls do not support Bluetooth audio devices in this Android version. Please select a different audio device.</string>
+    <!-- features/messages/impl -->
+    <string name="screen_room_timeline_legacy_call">Unsupported call. Ask if the caller can use the psst app.</string>
+    <!-- features/preferences/impl -->
+    <string name="screen_notification_settings_sound_element_default">psst (default)</string>
+    <string name="screen_notification_settings_sound_element_fade">psst (soft)</string>
+    <string name="screen_advanced_settings_element_call_base_url">Custom call base URL</string>
+    <string name="screen_advanced_settings_element_call_base_url_description">Set a custom base URL for calls.</string>
+</resources>

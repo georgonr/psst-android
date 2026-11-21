@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D94): Slovak overrides of upstream library strings that showed "Element" (see values/psst_overrides.xml). -->
+<resources>
+    <string name="screen_incoming_call_subtitle_android">Prichádzajúci hovor psst</string>
+    <string name="call_invalid_audio_device_bluetooth_devices_disabled">Hovory psst v tejto verzii systému Android nepodporujú zvukové zariadenia Bluetooth. Vyberte iné zvukové zariadenie.</string>
+    <string name="screen_room_timeline_legacy_call">Nepodporovaný hovor. Opýtajte sa, či volajúci môže použiť aplikáciu psst.</string>
+    <string name="screen_notification_settings_sound_element_default">psst (predvolený)</string>
+    <string name="screen_notification_settings_sound_element_fade">psst (stíšený)</string>
+    <string name="screen_advanced_settings_element_call_base_url">Vlastná základná URL adresa hovorov</string>
+    <string name="screen_advanced_settings_element_call_base_url_description">Nastaviť vlastnú základnú URL adresu pre hovory.</string>
+</resources>
