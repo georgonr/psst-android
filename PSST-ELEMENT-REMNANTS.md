@@ -2,7 +2,7 @@
 
 Every place where "Element", "Element X", "ElementX" or the Element logo could reach the user, found by searching
 `values/` + `values-sk/` resources of all modules, all `AndroidManifest.xml` labels, string literals in Kotlin
-(`"...Element..."`), and the `element*` drawables. Other locales (de, fr, …) are not handled: psst ships for SK/EN.
+(`"...Element..."`), and the `element*` drawables. Other locales (de, fr, …) are no longer shipped (D98).
 
 Upstream strings are overridden in the **app module** (`app/src/main/res/values/psst_overrides.xml` and
 `app/src/main/res/values-sk/psst_overrides.xml`). App resources win over library resources at merge time, so a
@@ -42,4 +42,4 @@ Localazy sync of the libraries does not bring the wording back and the library f
 | `*PreviewParam.kt`, `*Preview*.kt` literals ("Element X", "Element") | Compose previews / screenshot tests only, not in the app. |
 | Theme / class / package names (`Theme.ElementX`, `ElementXApplication`, `io.element.android.*`) | not visible (app label is the literal "psst", D83). |
 | About screen license text "modified version of Element …" | legal (kept on purpose, spec §4). |
-| Other locales (`values-de/`, `values-fr/`, …) | not handled, psst ships SK/EN. |
+| Other locales (`values-de/`, `values-fr/`, …) | still in the sources, but **not in the APK/AAB** since D98: `localeFilters` en, sk in `app/build.gradle.kts` and `locales_config.xml` with en, sk. A phone in another language gets English. |
