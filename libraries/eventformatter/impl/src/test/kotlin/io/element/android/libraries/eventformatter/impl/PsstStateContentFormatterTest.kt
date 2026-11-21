@@ -33,6 +33,8 @@ class PsstStateContentFormatterTest : RobolectricTest() {
         assertThat(format("eu.macet.psst.screen_protection", """{"enabled":true}""")).isEqualTo("Jana turned on screen protection")
         assertThat(format("eu.macet.psst.screen_protection", """{"enabled":false}""")).isEqualTo("Jana turned off screen protection")
         assertThat(format("m.room.retention", "{}", RenderingMode.RoomList)).isNull()
+        // The Rust SDK reports m.room.retention under the unstable MSC1763 name.
+        assertThat(format("org.matrix.msc1763.retention", """{"max_lifetime":300000}""")).isEqualTo("Jana turned on disappearing messages: 5 minutes")
     }
 
     @Test

@@ -89,6 +89,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.element.android.features.messages.impl.timeline.psst.hidingExpiredMessages
+import io.element.android.features.messages.impl.timeline.psst.withoutForeignCustomState
 import io.element.android.libraries.matrix.api.room.psst.PsstRoomSettingsService
 import timber.log.Timber
 
@@ -413,6 +414,8 @@ class TimelinePresenter(
 
             timelineController.timelineItems()
                 .onEach(redactedVoiceMessageManager::onEachMatrixTimelineItem)
+                // PSST (D96): only the psst custom room state is shown, other custom state stays hidden.
+                .map { items -> items.withoutForeignCustomState() }
                 // PSST (D95): expired messages of a room with disappearing messages are not shown.
                 .hidingExpiredMessages(psstRoomSettingsService.settingsFlow(room.roomId))
                 .onEach { items ->

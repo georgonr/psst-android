@@ -26,10 +26,20 @@ class PsstDisappearingMessagesTest {
         event = anEventTimelineItem(timestamp = ts, content = aMessageContent()),
     )
 
-    private fun state(id: String, ts: Long) = MatrixTimelineItem.Event(
+    private fun state(id: String, ts: Long, type: String = "m.room.retention") = MatrixTimelineItem.Event(
         uniqueId = UniqueId(id),
-        event = anEventTimelineItem(timestamp = ts, content = StateContent("", OtherState.Custom("m.room.retention", "{}"))),
+        event = anEventTimelineItem(timestamp = ts, content = StateContent("", OtherState.Custom(type, "{}"))),
     )
+
+    @Test
+    fun `only the psst custom state is kept`() {
+        val retention = state("r", 0, "org.matrix.msc1763.retention")
+        val protection = state("p", 0, "eu.macet.psst.screen_protection")
+        val foreign = state("f", 0, "com.example.whatever")
+        val msg = message("m", 0)
+        assertThat(listOf(retention, protection, foreign, msg).withoutForeignCustomState())
+            .containsExactly(retention, protection, msg).inOrder()
+    }
 
     @Test
     fun `off - nothing is hidden`() {

@@ -47,12 +47,13 @@ class RustTimelineEventFilterFactory : TimelineEventFilterFactory {
             emptyList()
         }
 
-        // Exclude any custom state events not supported by the SDK
-        val customStateEventsFilter = listOf(TimelineEventCondition.AnyCustomStateEvent)
+        // PSST (D96): custom state events are no longer excluded here, the SDK filter cannot keep one custom type
+        // (eu.macet.psst.screen_protection) while dropping the others. The other custom state events are dropped
+        // in the timeline presenter instead (withoutForeignCustomState).
         return if (excludedEventTypes.isNotEmpty() || excludedMembershipChanges.isNotEmpty()) {
-            TimelineEventFilter.Exclude(customStateEventsFilter + excludedEventTypes + excludedMembershipChanges)
+            TimelineEventFilter.Exclude(excludedEventTypes + excludedMembershipChanges)
         } else {
-            TimelineEventFilter.Exclude(customStateEventsFilter)
+            null
         }
     }
 }

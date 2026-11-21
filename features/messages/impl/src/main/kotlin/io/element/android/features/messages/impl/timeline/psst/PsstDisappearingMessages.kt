@@ -6,6 +6,8 @@
 package io.element.android.features.messages.impl.timeline.psst
 
 import io.element.android.libraries.matrix.api.room.psst.PsstRoomSettings
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomStateTypes
+import io.element.android.libraries.matrix.api.timeline.item.event.OtherState
 import io.element.android.libraries.matrix.api.timeline.MatrixTimelineItem
 import io.element.android.libraries.matrix.api.timeline.item.event.EventContent
 import io.element.android.libraries.matrix.api.timeline.item.event.FailedToParseStateContent
@@ -29,6 +31,15 @@ internal fun EventContent.isDisappearingContent(): Boolean = when (this) {
     is ProfileChangeContent,
     is FailedToParseStateContent -> false
     else -> true
+}
+
+/**
+ * PSST (D96): custom state events are let through by the SDK filter (see RustTimelineEventFilterFactory) so that the
+ * psst room settings show in the timeline; every other custom state event stays hidden, as upstream.
+ */
+internal fun List<MatrixTimelineItem>.withoutForeignCustomState(): List<MatrixTimelineItem> = filterNot { item ->
+    val content = ((item as? MatrixTimelineItem.Event)?.event?.content as? StateContent)?.content
+    content is OtherState.Custom && content.eventType !in PsstRoomStateTypes.all
 }
 
 internal fun List<MatrixTimelineItem>.withoutExpiredMessages(settings: PsstRoomSettings, nowMs: Long): List<MatrixTimelineItem> {

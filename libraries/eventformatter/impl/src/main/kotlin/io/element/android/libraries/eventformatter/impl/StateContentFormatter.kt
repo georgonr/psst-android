@@ -86,7 +86,7 @@ class StateContentFormatter(
                 }
             }
             // PSST (D95, D96): the psst room settings, in the timeline only (spec 26.11.1 texts).
-            is OtherState.Custom if content.eventType == PsstRoomStateTypes.RETENTION -> when (renderingMode) {
+            is OtherState.Custom if PsstRoomStateTypes.isRetention(content.eventType) -> when (renderingMode) {
                 RenderingMode.RoomList -> null
                 RenderingMode.Timeline -> {
                     val lifetime = PsstRoomStateContent.retentionMaxLifetime(content.contentJson)

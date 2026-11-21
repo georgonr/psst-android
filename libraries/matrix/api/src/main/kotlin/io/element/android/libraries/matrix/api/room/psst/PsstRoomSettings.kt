@@ -22,10 +22,15 @@ import kotlinx.serialization.json.put
 
 object PsstRoomStateTypes {
     const val RETENTION = "m.room.retention"
+
+    /** The Rust SDK (ruma) reports m.room.retention under its unstable MSC1763 name in the timeline. */
+    const val RETENTION_UNSTABLE = "org.matrix.msc1763.retention"
     const val SCREEN_PROTECTION = "eu.macet.psst.screen_protection"
     const val SCREENSHOT_NOTICE_KEY = "eu.macet.psst.screenshot"
 
-    val all = setOf(RETENTION, SCREEN_PROTECTION)
+    val all = setOf(RETENTION, RETENTION_UNSTABLE, SCREEN_PROTECTION)
+
+    fun isRetention(eventType: String): Boolean = eventType == RETENTION || eventType == RETENTION_UNSTABLE
 }
 
 /** The values offered in the settings (spec 26.11.1 §1). Other values set by other clients are shown as "custom". */
