@@ -10,9 +10,12 @@ package io.element.android.libraries.eventformatter.impl
 
 import dev.zacsweers.metro.Inject
 import io.element.android.libraries.eventformatter.impl.mode.RenderingMode
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomStateContent
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomStateTypes
 import io.element.android.libraries.matrix.api.timeline.item.event.OtherState
 import io.element.android.libraries.matrix.api.timeline.item.event.StateContent
 import io.element.android.libraries.ui.strings.CommonStrings
+import io.element.android.libraries.ui.strings.psstRetentionLabel
 import io.element.android.services.toolbox.api.strings.StringProvider
 import timber.log.Timber
 
@@ -80,6 +83,32 @@ class StateContentFormatter(
                 }
                 RenderingMode.Timeline -> {
                     formatRoomPinnedEvents(content, senderIsYou, senderDisambiguatedDisplayName)
+                }
+            }
+            // PSST (D95, D96): the psst room settings, in the timeline only (spec 26.11.1 texts).
+            is OtherState.Custom if content.eventType == PsstRoomStateTypes.RETENTION -> when (renderingMode) {
+                RenderingMode.RoomList -> null
+                RenderingMode.Timeline -> {
+                    val lifetime = PsstRoomStateContent.retentionMaxLifetime(content.contentJson)
+                    if (lifetime == null) {
+                        sp.getString(CommonStrings.psst_state_disappearing_messages_off, senderDisambiguatedDisplayName)
+                    } else {
+                        sp.getString(
+                            CommonStrings.psst_state_disappearing_messages_on,
+                            senderDisambiguatedDisplayName,
+                            sp.getString(psstRetentionLabel(lifetime)),
+                        )
+                    }
+                }
+            }
+            is OtherState.Custom if content.eventType == PsstRoomStateTypes.SCREEN_PROTECTION -> when (renderingMode) {
+                RenderingMode.RoomList -> null
+                RenderingMode.Timeline -> {
+                    if (PsstRoomStateContent.screenProtectionEnabled(content.contentJson)) {
+                        sp.getString(CommonStrings.psst_state_screen_protection_on, senderDisambiguatedDisplayName)
+                    } else {
+                        sp.getString(CommonStrings.psst_state_screen_protection_off, senderDisambiguatedDisplayName)
+                    }
                 }
             }
             is OtherState.Custom -> when (renderingMode) {

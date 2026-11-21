@@ -39,5 +39,6 @@ sealed interface OtherState {
     data class RoomTopic(val topic: String?) : OtherState
     data object SpaceChild : OtherState
     data object SpaceParent : OtherState
-    data class Custom(val eventType: String) : OtherState
+    // PSST (D95, D96): contentJson is filled for the psst room settings (PsstRoomStateTypes), null otherwise.
+    data class Custom(val eventType: String, val contentJson: String? = null) : OtherState
 }

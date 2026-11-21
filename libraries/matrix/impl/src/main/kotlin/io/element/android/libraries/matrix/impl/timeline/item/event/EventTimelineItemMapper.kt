@@ -32,6 +32,11 @@ import org.matrix.rustcomponents.sdk.QueueWedgeError
 import org.matrix.rustcomponents.sdk.Reaction
 import org.matrix.rustcomponents.sdk.ShieldState
 import uniffi.matrix_sdk_ui.TimelineEventShieldStateCode
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomStateContent
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomStateTypes
+import io.element.android.libraries.matrix.api.timeline.item.event.EventContent
+import io.element.android.libraries.matrix.api.timeline.item.event.OtherState
+import io.element.android.libraries.matrix.api.timeline.item.event.StateContent
 import org.matrix.rustcomponents.sdk.EventSendState as RustEventSendState
 import org.matrix.rustcomponents.sdk.EventTimelineItem as RustEventTimelineItem
 import org.matrix.rustcomponents.sdk.EventTimelineItemDebugInfo as RustEventTimelineItemDebugInfo
@@ -58,7 +63,7 @@ class EventTimelineItemMapper(
             sender = UserId(sender),
             senderProfile = senderProfile.map(),
             timestamp = timestamp.toLong(),
-            content = contentMapper.map(content),
+            content = contentMapper.map(content).withPsstStateContent { lazyProvider.debugInfo().originalJson },
             origin = origin?.map(),
             timelineItemDebugInfoProvider = { lazyProvider.debugInfo().map() },
             messageShieldProvider = { strict -> lazyProvider.getShields(strict).map() },
@@ -67,6 +72,18 @@ class EventTimelineItemMapper(
             forwarderProfile = forwarderProfile?.map(),
         )
     }
+}
+
+/**
+ * PSST (D95, D96): the SDK maps the psst room settings to a custom state without content; the timeline text needs
+ * the value (e.g. "turned on disappearing messages: 5 minutes"), so read it from the original event JSON.
+ */
+private fun EventContent.withPsstStateContent(originalJson: () -> String?): EventContent {
+    val state = this as? StateContent ?: return this
+    val custom = state.content as? OtherState.Custom ?: return this
+    if (custom.eventType !in PsstRoomStateTypes.all) return this
+    val contentJson = runCatching { PsstRoomStateContent.contentOfEvent(originalJson()) }.getOrNull()
+    return state.copy(content = custom.copy(contentJson = contentJson))
 }
 
 fun RustProfileDetails.map(): ProfileDetails {

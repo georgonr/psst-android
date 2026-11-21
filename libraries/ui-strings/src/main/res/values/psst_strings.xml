@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D95, D96): strings added by the psst fork (not managed by Localazy). Texts from docs/psst-26.11.1-spec.md. -->
+<resources>
+    <!-- Disappearing messages (m.room.retention) -->
+    <string name="psst_disappearing_messages">Disappearing messages</string>
+    <string name="psst_disappearing_messages_off">Off</string>
+    <string name="psst_disappearing_messages_5_minutes">5 minutes</string>
+    <string name="psst_disappearing_messages_1_hour">1 hour</string>
+    <string name="psst_disappearing_messages_1_day">1 day</string>
+    <string name="psst_disappearing_messages_1_week">1 week</string>
+    <string name="psst_disappearing_messages_custom">Custom</string>
+    <string name="psst_disappearing_messages_explanation">Messages in this chat disappear for everyone after the chosen time — older ones too. The psst server deletes them and the psst apps stop showing them. Anything someone copied, forwarded or photographed in the meantime can\'t be taken back.</string>
+    <string name="psst_state_disappearing_messages_on">%1$s turned on disappearing messages: %2$s</string>
+    <string name="psst_state_disappearing_messages_off">%1$s turned off disappearing messages</string>
+    <!-- Screen protection (eu.macet.psst.screen_protection) -->
+    <string name="psst_screen_protection">Screen protection</string>
+    <string name="psst_screen_protection_explanation">The psst Android app blocks screenshots and screen recording in this chat. On iPhone and on the web this can\'t be blocked: the iPhone app hides the chat while the screen is recorded or shared, and when someone takes a screenshot, the others are told. psst for desktop prevents capturing the window where the system allows it. Nothing can stop someone photographing the screen with another device.</string>
+    <string name="psst_state_screen_protection_on">%1$s turned on screen protection</string>
+    <string name="psst_state_screen_protection_off">%1$s turned off screen protection</string>
+    <string name="psst_screenshot_notice">📸 %1$s took a screenshot</string>
+    <string name="psst_room_setting_read_only">Only members allowed to change room settings can change this.</string>
+</resources>
