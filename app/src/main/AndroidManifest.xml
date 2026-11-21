@@ -17,6 +17,9 @@
          background without an active share: ACCESS_BACKGROUND_LOCATION stays stripped. -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" tools:node="remove" />
 
+    <!-- PSST (D96): Android 14+ screenshot detection in rooms with screen protection (install-time permission). -->
+    <uses-permission android:name="android.permission.DETECT_SCREEN_CAPTURE" />
+
     <!-- PSST (D83): literal label, not @string/app_name. Installer and Play Protect dialogs that read the APK before it is
          installed may not resolve resources; PackageItemInfo.loadLabel() then falls back to android:name and showed
          "io.element.android.x.ElementXApplication" instead of "psst". The name is the same in every language. -->

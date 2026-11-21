@@ -16,4 +16,6 @@ android {
 
 dependencies {
     implementation(projects.libraries.architecture)
+    // PSST (D96): PsstSecureWindow
+    implementation(projects.libraries.androidutils)
 }

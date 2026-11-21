@@ -13,7 +13,11 @@ import android.os.Parcelable
 import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.lifecycle.lifecycleScope
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomSettingsService
 import com.bumble.appyx.core.lifecycle.subscribe
 import com.bumble.appyx.core.modality.BuildContext
 import com.bumble.appyx.core.node.Node
@@ -73,6 +77,8 @@ class JoinedRoomLoadedFlowNode(
     private val activeRoomsHolder: ActiveRoomsHolder,
     private val analyticsService: AnalyticsService,
     roomGraphFactory: RoomGraphFactory,
+    // PSST (D96)
+    private val psstRoomSettingsService: PsstRoomSettingsService,
 ) : BaseFlowNode<JoinedRoomLoadedFlowNode.NavTarget>(
     backstack = BackStack(
         initialElement = initialElement(plugins),
@@ -322,6 +328,20 @@ class JoinedRoomLoadedFlowNode(
     @Composable
     override fun View(modifier: Modifier) {
         currentActivity = LocalActivity.current
+
+        // PSST (D96): FLAG_SECURE (+ screenshot notice on Android 14+) while a room with screen protection is open.
+        val psstSettings by remember { psstRoomSettingsService.settingsFlow(inputs.room.roomId) }
+            .collectAsState(psstRoomSettingsService.cachedSettings(inputs.room.roomId))
+        val activity = currentActivity
+        if (activity != null && psstSettings.screenProtection) {
+            PsstScreenProtectionEffect(
+                activity = activity,
+                roomId = inputs.room.roomId,
+                matrixClient = matrixClient,
+                service = psstRoomSettingsService,
+                scope = sessionCoroutineScope,
+            )
+        }
 
         BackstackView()
     }

@@ -131,6 +131,7 @@ class JoinedRoomLoadedFlowNodeTest : RobolectricTest() {
         matrixClient = matrixClient,
         activeRoomsHolder = activeRoomsHolder,
         analyticsService = FakeAnalyticsService(),
+        psstRoomSettingsService = io.element.android.libraries.matrix.test.room.psst.FakePsstRoomSettingsService(),
     )
 
     @Test

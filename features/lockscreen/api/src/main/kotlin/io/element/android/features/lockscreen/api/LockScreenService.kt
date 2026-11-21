@@ -9,7 +9,7 @@
 package io.element.android.features.lockscreen.api
 
 import android.os.Build
-import android.view.WindowManager
+import io.element.android.libraries.androidutils.ui.PsstSecureWindow
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.Flow
@@ -49,14 +49,8 @@ fun LockScreenService.handleSecureFlag(activity: ComponentActivity) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 activity.setRecentsScreenshotEnabled(!isPinSetup)
             } else {
-                if (isPinSetup) {
-                    activity.window.setFlags(
-                        WindowManager.LayoutParams.FLAG_SECURE,
-                        WindowManager.LayoutParams.FLAG_SECURE
-                    )
-                } else {
-                    activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                }
+                // PSST (D96): shared with the rooms with screen protection, see PsstSecureWindow.
+                PsstSecureWindow.set(activity.window, reason = "pin", secure = isPinSetup)
             }
         }
         .launchIn(activity.lifecycleScope)
