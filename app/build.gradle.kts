@@ -21,7 +21,6 @@ import extension.allLibrariesImpl
 import extension.allServicesImpl
 import extension.buildConfigFieldStr
 import extension.environmentOrGradleValue
-import extension.locales
 import extension.setupDependencyInjection
 import extension.testCommonDependencies
 import org.sonarqube.gradle.SonarResolverTask
@@ -79,7 +78,9 @@ android {
         }
 
         androidResources {
-            localeFilters += locales
+            // PSST (D98): psst ships Slovak and English only; the other upstream translations still say "Element X"
+            // and have no psst texts. (extension.locales is the upstream Localazy list, no longer used.)
+            localeFilters += setOf("en", "sk")
         }
     }
 
