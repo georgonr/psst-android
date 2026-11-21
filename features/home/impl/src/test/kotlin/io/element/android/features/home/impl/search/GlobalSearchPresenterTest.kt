@@ -513,5 +513,6 @@ private fun TestScope.createGlobalSearchPresenter(
         coroutineDispatchers = testCoroutineDispatchers(),
         matrixClient = matrixClient,
         searchHistoryStore = searchHistoryStore,
+        psstSearchIndexing = io.element.android.libraries.matrix.test.search.psst.FakePsstSearchIndexing(),
     )
 }

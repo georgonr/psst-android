@@ -206,6 +206,8 @@ class ShowLocationPresenterTest {
             // Continue the dialog sends permission request to the permissions presenter
             trackLocationState.eventSink(ShowLocationEvent.RequestPermissions)
             assertThat(fakePermissionsPresenter.events.last()).isEqualTo(PermissionsEvent.RequestPermissions)
+            // PSST (D97): the dialog is closed while the system asks
+            assertThat(awaitItem().dialogState).isEqualTo(LocationConstraintsDialogState.None)
         }
     }
 

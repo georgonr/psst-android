@@ -771,6 +771,8 @@ class RoomDetailsPresenterTest {
                     StateEventType.RoomName -> canChangeName
                     StateEventType.RoomTopic -> canChangeTopic
                     StateEventType.RoomPowerLevels -> canChangePowerLevels
+                    // PSST (D95, D96): asked by PsstRoomSettingsPresenter
+                    StateEventType.RoomRetention, is StateEventType.Custom -> false
                     else -> lambdaError()
                 }
             }

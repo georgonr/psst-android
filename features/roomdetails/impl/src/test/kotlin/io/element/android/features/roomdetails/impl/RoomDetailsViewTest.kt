@@ -163,7 +163,7 @@ class RoomDetailsViewTest : RobolectricTest() {
         }
     }
 
-    @Config(qualifiers = "h1024dp")
+    @Config(qualifiers = "h1500dp")
     @Test
     fun `click on security and privacy invokes expected callback`() = runAndroidComposeUiTest {
         ensureCalledOnce { callback ->
@@ -283,7 +283,7 @@ class RoomDetailsViewTest : RobolectricTest() {
         eventsRecorder.assertSingle(RoomDetailsEvent.SetFavorite(true))
     }
 
-    @Config(qualifiers = "h1500dp")
+    @Config(qualifiers = "h2000dp")
     @Test
     fun `click on leave emit expected Event`() = runAndroidComposeUiTest {
         val eventsRecorder = EventsRecorder<RoomDetailsEvent>()
@@ -296,7 +296,7 @@ class RoomDetailsViewTest : RobolectricTest() {
         eventsRecorder.assertSingle(RoomDetailsEvent.LeaveRoom(needsConfirmation = true))
     }
 
-    @Config(qualifiers = "h1500dp")
+    @Config(qualifiers = "h2000dp")
     @Test
     fun `click on report room  invokes expected callback`() = runAndroidComposeUiTest {
         ensureCalledOnce { callback ->

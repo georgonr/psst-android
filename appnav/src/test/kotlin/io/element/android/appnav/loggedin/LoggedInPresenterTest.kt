@@ -146,6 +146,7 @@ class LoggedInPresenterTest {
             networkMonitor = networkMonitor,
             localNetworkPermissionAdvisor = FakeLocalNetworkPermissionAdvisor(),
             permissionsPresenterFactory = FakePermissionsPresenterFactory(),
+            psstSearchIndexing = io.element.android.libraries.matrix.test.search.psst.FakePsstSearchIndexing(),
         ).test {
             encryptionService.emitRecoveryState(RecoveryState.UNKNOWN)
             encryptionService.emitRecoveryState(RecoveryState.INCOMPLETE)
@@ -387,6 +388,7 @@ class LoggedInPresenterTest {
             networkMonitor = networkMonitor,
             localNetworkPermissionAdvisor = FakeLocalNetworkPermissionAdvisor(),
             permissionsPresenterFactory = FakePermissionsPresenterFactory(),
+            psstSearchIndexing = io.element.android.libraries.matrix.test.search.psst.FakePsstSearchIndexing(),
         )
     }
 }
