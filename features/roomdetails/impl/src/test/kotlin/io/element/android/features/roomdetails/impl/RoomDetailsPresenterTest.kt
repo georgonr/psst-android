@@ -123,6 +123,10 @@ class RoomDetailsPresenterTest {
             appPreferencesStore = appPreferencesStore,
             notificationCleaner = notificationCleaner,
             sessionPreferencesStore = sessionPreferencesStore,
+            psstRoomSettingsPresenter = io.element.android.features.roomdetails.impl.psst.settings.PsstRoomSettingsPresenter(
+                room = room,
+                service = io.element.android.libraries.matrix.test.room.psst.FakePsstRoomSettingsService(),
+            ),
         )
     }
 

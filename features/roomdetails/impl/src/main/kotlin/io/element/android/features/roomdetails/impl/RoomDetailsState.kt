@@ -53,6 +53,9 @@ data class RoomDetailsState(
     val roomVersion: String?,
     val roomHistoryVisibility: RoomHistoryVisibility,
     val hasNewContent: Boolean,
+    // PSST (D95, D96)
+    val psstSettings: io.element.android.features.roomdetails.impl.psst.settings.PsstRoomSettingsState =
+        io.element.android.features.roomdetails.impl.psst.settings.aPsstRoomSettingsState(canChange = false),
     val eventSink: (RoomDetailsEvent) -> Unit
 ) {
     val roomBadges = buildList {

@@ -59,6 +59,7 @@ import io.element.android.libraries.designsystem.components.button.BackButton
 import io.element.android.libraries.designsystem.components.button.MainActionButton
 import io.element.android.libraries.designsystem.components.list.ListItemContent
 import io.element.android.libraries.designsystem.components.preferences.PreferenceCategory
+import io.element.android.features.roomdetails.impl.psst.settings.PsstRoomSettingsSection
 import io.element.android.libraries.designsystem.components.preferences.PreferenceSwitch
 import io.element.android.libraries.designsystem.modifiers.niceClickable
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -316,6 +317,8 @@ fun RoomDetailsView(
                     )
                 }
             }
+            // PSST (D95, D96): disappearing messages, screen protection
+            PsstRoomSettingsSection(state.psstSettings)
             if (state.isEncrypted) {
                 PreferenceCategory(
                     title = stringResource(R.string.screen_room_details_security_title)

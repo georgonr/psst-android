@@ -25,12 +25,15 @@ import io.element.android.libraries.matrix.api.roomlist.RoomSummary
 import io.element.android.libraries.matrix.ui.model.dmUserStatus
 import io.element.android.libraries.matrix.ui.model.getAvatarData
 import io.element.android.libraries.matrix.ui.model.toInviteSender
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomSettingsService
 import kotlinx.collections.immutable.toImmutableList
 
 @Inject
 class RoomListRoomSummaryFactory(
     private val dateFormatter: DateFormatter,
     private val roomLatestEventFormatter: RoomLatestEventFormatter,
+    // PSST (D95)
+    private val psstRoomSettingsService: PsstRoomSettingsService,
 ) {
     fun create(roomSummary: RoomSummary): RoomListRoomSummary {
         val roomInfo = roomSummary.info
@@ -48,7 +51,13 @@ class RoomListRoomSummaryFactory(
                 mode = DateFormatterMode.TimeOrDate,
                 useRelative = true,
             ),
-            latestEvent = computeLatestEvent(roomSummary.latestEvent, roomInfo.hasOnlyTwoMembers()),
+            // PSST (D95): no preview of a message that disappeared (best effort: checked when the room list updates).
+            latestEvent = if (psstRoomSettingsService.cachedSettings(roomSummary.roomId)
+                    .isExpired(originServerTs = roomSummary.latestEventTimestamp ?: Long.MAX_VALUE, nowMs = System.currentTimeMillis())) {
+                LatestEvent.None
+            } else {
+                computeLatestEvent(roomSummary.latestEvent, roomInfo.hasOnlyTwoMembers())
+            },
             avatarData = avatarData,
             userDefinedNotificationMode = roomInfo.userDefinedNotificationMode,
             hasRoomCall = roomInfo.hasRoomCall,

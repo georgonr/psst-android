@@ -62,6 +62,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import io.element.android.features.roomdetails.impl.psst.settings.PsstRoomSettingsPresenter
 
 @AssistedInject
 class RoomDetailsPresenter(
@@ -79,6 +80,8 @@ class RoomDetailsPresenter(
     private val appPreferencesStore: AppPreferencesStore,
     private val sessionPreferencesStore: SessionPreferencesStore,
     private val notificationCleaner: NotificationCleaner,
+    // PSST (D95, D96)
+    private val psstRoomSettingsPresenter: PsstRoomSettingsPresenter,
 ) : Presenter<RoomDetailsState> {
     @AssistedFactory
     interface Factory {
@@ -91,6 +94,7 @@ class RoomDetailsPresenter(
     override fun present(): RoomDetailsState {
         val scope = rememberCoroutineScope()
         val leaveRoomState = leaveRoomPresenter.present()
+        val psstSettings = psstRoomSettingsPresenter.present()
         val roomInfo by room.roomInfoFlow.collectAsState()
         val roomAvatar by remember { derivedStateOf { roomInfo.avatarUrl } }
 
@@ -224,6 +228,7 @@ class RoomDetailsPresenter(
             roomVersion = roomInfo.roomVersion,
             roomHistoryVisibility = roomInfo.historyVisibility,
             hasNewContent = hasNewContent,
+            psstSettings = psstSettings,
             eventSink = ::handleEvent,
         )
     }

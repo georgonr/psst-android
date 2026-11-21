@@ -2089,6 +2089,7 @@ class TimelinePresenterTest {
             timelineProtectionPresenter = timelineProtectionPresenter,
                 clipboardHelper = clipboardHelper,
             toastHelper = toastHelper,
+            psstRoomSettingsService = io.element.android.libraries.matrix.test.room.psst.FakePsstRoomSettingsService(),
         )
     }
 }

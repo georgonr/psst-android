@@ -42,7 +42,10 @@ class RoomListRoomSummaryFactoryTest {
 fun aRoomListRoomSummaryFactory(
     dateFormatter: DateFormatter = FakeDateFormatter { _, _, _ -> "Today" },
     roomLatestEventFormatter: RoomLatestEventFormatter = FakeRoomLatestEventFormatter(),
+    psstRoomSettingsService: io.element.android.libraries.matrix.api.room.psst.PsstRoomSettingsService =
+        io.element.android.libraries.matrix.test.room.psst.FakePsstRoomSettingsService(),
 ) = RoomListRoomSummaryFactory(
     dateFormatter = dateFormatter,
     roomLatestEventFormatter = roomLatestEventFormatter,
+    psstRoomSettingsService = psstRoomSettingsService,
 )

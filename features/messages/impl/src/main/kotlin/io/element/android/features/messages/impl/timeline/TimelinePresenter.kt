@@ -88,6 +88,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import io.element.android.features.messages.impl.timeline.psst.hidingExpiredMessages
+import io.element.android.libraries.matrix.api.room.psst.PsstRoomSettingsService
 import timber.log.Timber
 
 const val FOCUS_ON_PINNED_EVENT_DEBOUNCE_DURATION_IN_MILLIS = 200L
@@ -117,6 +119,8 @@ class TimelinePresenter(
     private val timelineProtectionPresenter: Presenter<TimelineProtectionState>,
     private val clipboardHelper: ClipboardHelper,
     private val toastHelper: ToastHelper,
+    // PSST (D95)
+    private val psstRoomSettingsService: PsstRoomSettingsService,
 ) : Presenter<TimelineState> {
     private val tag = "TimelinePresenter"
 
@@ -408,6 +412,9 @@ class TimelinePresenter(
                 .launchIn(this)
 
             timelineController.timelineItems()
+                .onEach(redactedVoiceMessageManager::onEachMatrixTimelineItem)
+                // PSST (D95): expired messages of a room with disappearing messages are not shown.
+                .hidingExpiredMessages(psstRoomSettingsService.settingsFlow(room.roomId))
                 .onEach { items ->
                     val parent = analyticsService.getLongRunningTransaction(DisplayFirstTimelineItems)
                     val transaction = parent?.startChild("timelineItemsFactory.replaceWith", "Processing timeline items")
@@ -415,7 +422,6 @@ class TimelinePresenter(
                     timelineItemsFactory.replaceWith(timelineItems = items)
                     transaction?.finish()
                 }
-                .onEach(redactedVoiceMessageManager::onEachMatrixTimelineItem)
                 .flowOn(dispatchers.computation)
                 .launchIn(this)
         }
