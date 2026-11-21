@@ -8,14 +8,23 @@
 
 package io.element.android.features.location.api
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.sp
+import io.element.android.features.location.api.internal.PsstStaticMapRenderer
+import io.element.android.libraries.designsystem.theme.components.Text
+import kotlinx.coroutines.CancellationException
+import timber.log.Timber
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -23,24 +32,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
-import coil3.Extras
-import coil3.asImage
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
 import io.element.android.compound.theme.ElementTheme
 import io.element.android.features.enterprise.api.remoteconfig.MapTilerConfig
 import io.element.android.features.location.api.internal.StaticMapPlaceholder
 import io.element.android.features.location.api.internal.centerBottomEdge
-import io.element.android.features.location.api.internal.rememberStaticMapBuilder
 import io.element.android.libraries.designsystem.components.LocationPin
 import io.element.android.libraries.designsystem.components.PinVariant
 import io.element.android.libraries.designsystem.preview.ElementPreview
@@ -127,75 +127,67 @@ private fun BoxWithConstraintsScope.StaleMapContent(
     }
 }
 
+/**
+ * PSST (D97): rendered on the device from the psst map styles with MapLibre's snapshotter (see
+ * [PsstStaticMapRenderer]); the attribution required by OpenMapTiles / OpenStreetMap is drawn on the image.
+ */
 @Composable
 private fun BoxWithConstraintsScope.LoadableMapContent(
-    mapTilerConfig: MapTilerConfig?,
+    @Suppress("UNUSED_PARAMETER") mapTilerConfig: MapTilerConfig?,
     location: Location,
     zoom: Double,
     pinVariant: PinVariant,
     contentDescription: String?,
     darkMode: Boolean,
 ) {
-    val context = LocalContext.current
+    val density = LocalDensity.current
+    val size = DpSize(maxWidth, maxHeight)
     var retryHash by remember { mutableIntStateOf(0) }
-    val builder = rememberStaticMapBuilder(mapTilerConfig)
-
-    val (painter, state, contentScale) = if (LocalInspectionMode.current) {
-        val painter = painterResource(CommonDrawables.sample_map)
-        val state = AsyncImagePainter.State.Success(
-            painter = painter,
-            result = SuccessResult(
-                image = createBitmap(1, 1, Bitmap.Config.ALPHA_8).asImage(),
-                request = ImageRequest.Builder(context).build()
-            )
-        )
-        Triple(painter, state, ContentScale.Crop)
-    } else {
-        val painter = rememberAsyncImagePainter(
-            model = if (builder == null || constraints.isZero) {
-                // Avoid building a URL if there is no map provider or if any of the size constraints is zero
-                null
-            } else {
-                ImageRequest.Builder(context)
-                    .data(
-                        builder.build(
-                            lat = location.lat,
-                            lon = location.lon,
-                            zoom = zoom,
-                            darkMode = darkMode,
-                            width = constraints.maxWidth,
-                            height = constraints.maxHeight,
-                            density = LocalDensity.current.density,
-                        )
-                    )
-                    .size(width = constraints.maxWidth, height = constraints.maxHeight)
-                    .apply {
-                        extras.set(Extras.Key("retry_hash"), retryHash).build()
-                    }
-                    .build()
-            }
-        )
-
-        val state by painter.state.collectAsState()
-        Triple(painter, state, ContentScale.Fit)
+    val isInspection = LocalInspectionMode.current
+    var image by remember(location, zoom, darkMode, size, density) {
+        mutableStateOf(if (isInspection) null else PsstStaticMapRenderer.cached(location, zoom, darkMode, size, density))
     }
-
-    when (state) {
-        is AsyncImagePainter.State.Success -> {
+    var failed by remember(location, zoom, darkMode, size, density) { mutableStateOf(false) }
+    if (!isInspection) {
+        LaunchedEffect(location, zoom, darkMode, size, density, retryHash) {
+            if (image != null || maxWidth <= 0.dp || maxHeight <= 0.dp) return@LaunchedEffect
+            failed = false
+            try {
+                image = PsstStaticMapRenderer.render(location, zoom, darkMode, size, density)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                Timber.w(e, "PSST: static map not rendered")
+                failed = true
+            }
+        }
+    }
+    val bitmap = image
+    when {
+        isInspection -> {
             Image(
-                painter = painter,
+                painter = painterResource(CommonDrawables.sample_map),
                 contentDescription = contentDescription,
                 modifier = Modifier.size(width = maxWidth, height = maxHeight),
-                // The returned image can be smaller than the requested size due to the static maps API having
-                // a max width and height of 2048 px. We apply ContentScale.Fit to handle this.
-                contentScale = contentScale,
+                contentScale = ContentScale.Crop,
             )
             LocationPin(variant = pinVariant, modifier = Modifier.centerBottomEdge(this))
+            PsstMapAttribution(modifier = Modifier.align(Alignment.BottomEnd))
+        }
+        bitmap != null -> {
+            Image(
+                bitmap = bitmap,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(width = maxWidth, height = maxHeight),
+                contentScale = ContentScale.Crop,
+            )
+            LocationPin(variant = pinVariant, modifier = Modifier.centerBottomEdge(this))
+            PsstMapAttribution(modifier = Modifier.align(Alignment.BottomEnd))
         }
         else -> {
             StaticMapPlaceholder(
                 painter = painterResource(R.drawable.blurred_map),
-                canReload = builder?.isServiceAvailable() == true && state is AsyncImagePainter.State.Error,
+                canReload = failed,
                 contentDescription = contentDescription,
                 width = maxWidth,
                 height = maxHeight,
@@ -203,6 +195,20 @@ private fun BoxWithConstraintsScope.LoadableMapContent(
             )
         }
     }
+}
+
+/** PSST (D97): "© OpenMapTiles © OpenStreetMap contributors", visible on every static map. */
+@Composable
+private fun PsstMapAttribution(modifier: Modifier = Modifier) {
+    Text(
+        text = PsstMaps.ATTRIBUTION,
+        style = ElementTheme.typography.fontBodyXsRegular.copy(fontSize = 9.sp),
+        color = Color.Black,
+        maxLines = 1,
+        modifier = modifier
+            .background(Color.White.copy(alpha = 0.7f))
+            .padding(horizontal = 4.dp, vertical = 1.dp),
+    )
 }
 
 @PreviewsDayNight

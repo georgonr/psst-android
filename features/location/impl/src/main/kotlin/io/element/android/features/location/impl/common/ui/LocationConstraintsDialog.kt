@@ -27,7 +27,8 @@ fun LocationConstraintsDialog(
     when (state) {
         LocationConstraintsDialogState.None -> Unit
         LocationConstraintsDialogState.PermissionRationale -> ConfirmationDialog(
-            content = stringResource(R.string.error_missing_location_rationale_android, appName),
+            // PSST (D97): the permission is asked on first use, after this explanation (spec 26.11.1 §3).
+            content = stringResource(R.string.psst_location_permission_rationale),
             onSubmitClick = onRequestPermissions,
             onDismiss = onDismiss,
             submitText = stringResource(CommonStrings.action_continue),

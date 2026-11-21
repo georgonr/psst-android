@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D97): strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_location_permission_rationale">psst použije vašu polohu, len keď ju sami pošlete do rozhovoru alebo spustíte živé zdieľanie. Vidia ju len účastníci rozhovoru; v šifrovaných rozhovoroch je šifrovaná.</string>
+</resources>

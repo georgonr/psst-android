@@ -8,6 +8,8 @@
 package io.element.android.features.location.impl.live.service
 
 import android.content.Context
+import android.content.Intent
+import androidx.core.content.ContextCompat
 import dev.zacsweers.metro.AppScope
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -33,12 +35,13 @@ class LiveLocationSharingCoordinator internal constructor(
     private val nowMillis: () -> Long,
 ) {
     @Inject
-    @Suppress("UNUSED_PARAMETER")
     constructor(@ApplicationContext context: Context, clock: SystemClock) : this(
-        // PSST (D87): location sharing is not offered (no map key, Google Play location policy) — the location
-        // foreground service and the location permissions were removed, so there is nothing to start.
-        startService = {},
-        stopService = {},
+        startService = {
+            ContextCompat.startForegroundService(context, Intent(context, LiveLocationSharingService::class.java))
+        },
+        stopService = {
+            context.stopService(Intent(context, LiveLocationSharingService::class.java))
+        },
         nowMillis = clock::epochMillis
     )
 

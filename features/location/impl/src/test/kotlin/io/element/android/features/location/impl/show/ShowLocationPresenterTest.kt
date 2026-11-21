@@ -225,6 +225,11 @@ class ShowLocationPresenterTest {
 
             initialState.eventSink(ShowLocationEvent.TrackMyLocation(true))
 
+            // PSST (D97): the psst rationale is shown first, its Continue requests the permission.
+            assertThat(fakePermissionsPresenter.events).doesNotContain(PermissionsEvent.RequestPermissions)
+            val rationaleState = awaitItem()
+            assertThat(rationaleState.dialogState).isEqualTo(LocationConstraintsDialogState.PermissionRationale)
+            rationaleState.eventSink(ShowLocationEvent.RequestPermissions)
             assertThat(fakePermissionsPresenter.events).contains(PermissionsEvent.RequestPermissions)
             cancelAndIgnoreRemainingEvents()
         }
@@ -245,11 +250,14 @@ class ShowLocationPresenterTest {
             val initialState = awaitItem()
 
             initialState.eventSink(ShowLocationEvent.TrackMyLocation(true))
+            // PSST (D97): rationale first, then the request.
+            awaitItem().eventSink(ShowLocationEvent.RequestPermissions)
             assertThat(fakePermissionsPresenter.events).contains(PermissionsEvent.RequestPermissions)
 
             fakePermissionsPresenter.givenState(aPermissionsState(permissions = PermissionsState.Permissions.AllGranted))
-            assertThat(awaitItem().isTrackMyLocation).isFalse()
-            assertThat(awaitItem().isTrackMyLocation).isTrue()
+            while (!awaitItem().isTrackMyLocation) {
+                // wait for the tracking to start
+            }
         }
     }
 

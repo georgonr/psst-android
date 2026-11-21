@@ -10,29 +10,20 @@ package io.element.android.features.location.impl
 
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.SingleIn
-import io.element.android.features.enterprise.api.remoteconfig.CustomMapTilerConfigProvider
 import io.element.android.features.enterprise.api.remoteconfig.MapTilerConfig
 import io.element.android.features.location.api.LocationService
 import io.element.android.features.location.api.buildTimeMapTilerConfig
 import io.element.android.libraries.di.SessionScope
-import io.element.android.libraries.di.annotations.SessionCoroutineScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * PSST (D97): always the psst map styles (PsstMaps). A MapTiler configuration published by a homeserver
+ * (enterprise remote config) is ignored: psst does not use MapTiler and its maps must go through the psst proxy.
+ */
 @SingleIn(SessionScope::class)
 @ContributesBinding(SessionScope::class)
-class DefaultLocationService(
-    customMapTilerConfigProvider: CustomMapTilerConfigProvider,
-    @SessionCoroutineScope sessionCoroutineScope: CoroutineScope,
-) : LocationService {
-    override val mapTilerConfig: StateFlow<MapTilerConfig?> = flow {
-        customMapTilerConfigProvider.get().getOrNull()?.let { emit(it) }
-    }.stateIn(
-        scope = sessionCoroutineScope,
-        started = SharingStarted.Eagerly,
-        initialValue = buildTimeMapTilerConfig(),
-    )
+class DefaultLocationService : LocationService {
+    override val mapTilerConfig: StateFlow<MapTilerConfig?> = MutableStateFlow(buildTimeMapTilerConfig()).asStateFlow()
 }

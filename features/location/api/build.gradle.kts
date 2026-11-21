@@ -66,6 +66,8 @@ dependencies {
     implementation(projects.libraries.uiStrings)
     implementation(projects.features.enterprise.api)
     implementation(libs.coil.compose)
+    // PSST (D97): static map thumbnails rendered on the device (MapLibre snapshotter), no static-maps API
+    implementation(libs.maplibre.compose)
 
     testCommonDependencies(libs)
 }

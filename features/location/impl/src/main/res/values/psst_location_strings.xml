@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PSST (D97): strings added by the psst fork (not managed by Localazy). -->
+<resources>
+    <string name="psst_location_permission_rationale">psst uses your location only when you send it to a chat or start live sharing. Only the people in the chat can see it; in encrypted chats it is encrypted.</string>
+</resources>

@@ -55,7 +55,8 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
-private val LIVE_LOCATION_DURATIONS = listOf(15.minutes, 1.hours, 8.hours)
+// PSST (D97): exactly 15 and 60 minutes (spec 26.11.1 §3).
+private val LIVE_LOCATION_DURATIONS = listOf(15.minutes, 1.hours)
 
 @AssistedInject
 class ShareLocationPresenter(
@@ -105,9 +106,7 @@ class ShareLocationPresenter(
                 // No need to check SendLiveLocationPermissions here
                 sendLiveLocationPermissions = SendLiveLocationPermissions.GRANTED
             )
-            if (locationConstraints is LocationConstraintsCheck.PermissionShouldBeRequested) {
-                permissionsState.eventSink(PermissionsEvent.RequestPermissions)
-            }
+            // PSST (D97): not requested right away — the rationale dialog explains first and its Continue requests it.
             trackUserPosition = locationConstraints is LocationConstraintsCheck.Success
             dialogState = ShareLocationState.Dialog.Constraints(locationConstraints.toDialogState())
         }
@@ -131,9 +130,7 @@ class ShareLocationPresenter(
                     }
                 }
                 else -> {
-                    if (locationConstraints is LocationConstraintsCheck.PermissionShouldBeRequested) {
-                        permissionsState.eventSink(PermissionsEvent.RequestPermissions)
-                    }
+                    // PSST (D97): not requested right away — the rationale dialog explains first and its Continue requests it.
                     dialogState = ShareLocationState.Dialog.Constraints(locationConstraints.toDialogState())
                 }
             }

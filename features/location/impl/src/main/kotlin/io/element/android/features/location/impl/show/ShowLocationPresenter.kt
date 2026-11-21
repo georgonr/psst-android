@@ -95,9 +95,7 @@ class ShowLocationPresenter(
                 // No need to check SendLiveLocationPermissions here
                 sendLiveLocationPermissions = SendLiveLocationPermissions.GRANTED
             )
-            if (locationConstraints is LocationConstraintsCheck.PermissionShouldBeRequested) {
-                permissionsState.eventSink(PermissionsEvent.RequestPermissions)
-            }
+            // PSST (D97): not requested right away — the rationale dialog explains first and its Continue requests it.
             isTrackMyLocation = locationConstraints is LocationConstraintsCheck.Success
             dialogState = locationConstraints.toDialogState()
         }
@@ -130,7 +128,10 @@ class ShowLocationPresenter(
                     locationActions.openLocationSettings()
                     dialogState = LocationConstraintsDialogState.None
                 }
-                ShowLocationEvent.RequestPermissions -> permissionsState.eventSink(PermissionsEvent.RequestPermissions)
+                ShowLocationEvent.RequestPermissions -> {
+                    dialogState = LocationConstraintsDialogState.None
+                    permissionsState.eventSink(PermissionsEvent.RequestPermissions)
+                }
                 ShowLocationEvent.StopLocationSharing -> coroutineScope.launch {
                     liveLocationShareManager.stopShare(joinedRoom.roomId)
                 }

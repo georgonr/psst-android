@@ -9,6 +9,10 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" >
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
     <!-- Declare Vulkan as an optional feature to prevent installation issues on devices that do not support it. -->
     <uses-feature
@@ -16,7 +20,11 @@
         android:required="false"
         tools:replace="android:required" />
 
-    <!-- PSST (D87): location permissions and the live-location foreground service removed (Google Play policy; the
-         feature is hidden in psst). app/src/main/AndroidManifest.xml strips them too, check-manifest.py guards it. -->
+    <application>
+        <service
+            android:name=".live.service.LiveLocationSharingService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
+    </application>
 
 </manifest>

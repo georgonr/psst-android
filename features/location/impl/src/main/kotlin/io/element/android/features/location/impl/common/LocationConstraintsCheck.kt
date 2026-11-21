@@ -43,7 +43,8 @@ fun checkLocationConstraints(
 fun LocationConstraintsCheck.toDialogState(): LocationConstraintsDialogState {
     return when (this) {
         LocationConstraintsCheck.Success -> LocationConstraintsDialogState.None
-        LocationConstraintsCheck.PermissionShouldBeRequested -> LocationConstraintsDialogState.None
+        // PSST (D97): explain first (psst rationale text), the dialog's Continue asks the system for the permission.
+        LocationConstraintsCheck.PermissionShouldBeRequested -> LocationConstraintsDialogState.PermissionRationale
         LocationConstraintsCheck.PermissionRationale -> LocationConstraintsDialogState.PermissionRationale
         LocationConstraintsCheck.PermissionDenied -> LocationConstraintsDialogState.PermissionDenied
         LocationConstraintsCheck.LocationServiceDisabled -> LocationConstraintsDialogState.LocationServiceDisabled

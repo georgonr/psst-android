@@ -43,11 +43,26 @@ fun rememberTileStyleUrl(
     val darkMode = !ElementTheme.isLightTheme
     return remember(darkMode, mapTilerConfig) {
         // Without config, the map is not displayed, so the style URL is not used.
+        // PSST (D97): the psst map styles (PsstMaps), not MapTiler.
         mapTilerConfig?.let {
-            MapTilerTileServerStyleUriBuilder().build(
+            PsstTileServerStyleUriBuilder().build(
                 mapTilerConfig = it,
                 darkMode = darkMode,
             )
         }.orEmpty()
+    }
+}
+
+/**
+ * PSST (D97): the style ids of [io.element.android.features.location.api.PsstMaps.config] are full style URLs.
+ */
+internal class PsstTileServerStyleUriBuilder : TileServerStyleUriBuilder {
+    override fun build(
+        mapTilerConfig: MapTilerConfig,
+        darkMode: Boolean,
+    ): String {
+        val styleUrl = if (darkMode) mapTilerConfig.darkStyleId else mapTilerConfig.lightStyleId
+        return styleUrl?.takeIf { it.startsWith("https://") }
+            ?: io.element.android.features.location.api.PsstMaps.styleUrl(darkMode)
     }
 }

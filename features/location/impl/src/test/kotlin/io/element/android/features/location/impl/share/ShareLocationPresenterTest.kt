@@ -160,7 +160,7 @@ class ShareLocationPresenterTest {
     }
 
     @Test
-    fun `initial state with permissions not yet requested triggers permission request`() = runTest {
+    fun `PSST - permissions not yet requested shows the psst rationale first, Continue requests them`() = runTest {
         val shareLocationPresenter = createShareLocationPresenter()
         fakePermissionsPresenter.givenState(
             aPermissionsState(
@@ -171,7 +171,11 @@ class ShareLocationPresenterTest {
         )
 
         shareLocationPresenter.test {
-            skipItems(2)
+            skipItems(1)
+            val state = awaitItem()
+            assertThat(state.dialogState).isEqualTo(ShareLocationState.Dialog.Constraints(LocationConstraintsDialogState.PermissionRationale))
+            assertThat(fakePermissionsPresenter.events).doesNotContain(PermissionsEvent.RequestPermissions)
+            state.eventSink(ShareLocationEvent.RequestPermissions)
             cancelAndIgnoreRemainingEvents()
             assertThat(fakePermissionsPresenter.events).contains(PermissionsEvent.RequestPermissions)
         }
